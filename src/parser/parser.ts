@@ -55,4 +55,32 @@ export default class Parser<R, D> {
   run(target: InputType): ParserState<R, D> {
     return this.pf(initialisePS(target));
   }
+
+  map<T>(fn: (x: R) => T): Parser<T, D> {
+    const pf = this.pf;
+    return new Parser(function Parser$map$state(state): ParserState<T, D> {
+      const newState = pf(state);
+      if (newState.isError) return newState as unknown as ParserState<T, D>;
+      return updateResult(newState, fn(newState.result));
+    });
+  }
+
+  tag(s: string): Parser<{ name: string; value: R }, D> {
+    return this.map((x) => {
+      return {
+        name: s,
+        value: x,
+      };
+    });
+  }// chain :: Parser e a s ~> (a -> Parser e b s) -> Parser e b s
+  chain<T2>(fn: (x?: R) => Parser<R,D>): Parser<R,D> {
+    const p = this.pf;
+    return new Parser(function Parser$chain$state(
+      state,
+    ): ParserState<R,D> {
+      const newState = p(state);
+      if (newState.isError) return newState as unknown as ParserState<R,D>;
+      return fn(newState.result).pf(newState);
+    });
+  }
 }
