@@ -1,6 +1,15 @@
 import { InputType, InputTypes, ParserState, ParsingFunction } from "./types";
 import { encoder } from './utils'
 
+/** An array of different generic parsers. */
+export type ParserTuple<R extends any[], D> =
+  { [K in keyof R]: Parser<R[K], D> }
+/** An array of parsers paired with strings. */
+export type PairedParsers<D, R> =
+  { [K in keyof R]: [string, Parser<R[K],D>] };
+/** An object of results indexed by string keys. */
+export type PairedResults<R> = { [key: string]: R[keyof R] };
+
 export function initialisePS<D>(target: InputType, data: D | null = null): ParserState<null, D | null> {
     let dataView: DataView
     let inputType;
