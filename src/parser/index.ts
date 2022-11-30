@@ -1,2 +1,2 @@
-export * from "./pComb"
-export * from "./pGen"
+export * from "./pComb";
+export * from "./pGen";

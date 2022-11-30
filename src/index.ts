@@ -1,15 +1,10 @@
-import { sequence, str } from "./parser"
+import { sequence, str } from "./parser";
 
 export function tup<T extends any[]>(...data: T) {
-    return data;
+  return data;
 }
 
-console.log("test")
+console.log("test");
 
-
-let parser = sequence(tup(
-    str("nyah"),
-    str("~~"),
-    str(" "),
-))
-console.log(parser.run("nyah~~"))
+let parser = sequence(tup(str("nyah"), str("~~"), str(" ")));
+console.log(parser.run("nyah~~"));
