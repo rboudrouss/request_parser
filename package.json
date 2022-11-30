@@ -4,10 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build" : "tsc"
+    "build": "tsc -b --verbose",
+    "wild": "tsc -b --watch",
+    "test": "mocha -r ts-node/register test/**/*.test.ts",
+    "west": "mocha -r ts-node/register test/**/*.test.ts -w"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^4.9.3"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^8.2.3",
+    "@types/node": "^14.18.33",
+    "chai": "^4.3.7",
+    "mocha": "^10.1.0",
+    "ts-node": "^10.9.1"
+  }
 }
