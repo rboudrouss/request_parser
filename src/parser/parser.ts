@@ -42,11 +42,11 @@ export default class Parser<R, D> {
     });
   }
 
-  chain(fn: (x?: R) => Parser<R, D>): Parser<R, D> {
+  chain<R2>(fn: (x?: R) => Parser<R2, D>): Parser<R2, D> {
     const p = this.pf;
     return new Parser((state) => {
       const newState = p(state);
-      if (newState.isError) return newState;
+      if (newState.isError) return newState as unknown as ParserState<R2,D>;
       return fn(newState.result).pf(newState);
     });
   }

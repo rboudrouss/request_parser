@@ -128,17 +128,17 @@ export const RawString = (s: string) => {
     .split("")
     .map((c) => c.charCodeAt(0))
     .map((n) => {
-      return Uint(8).chain((res) => {
+      return Uint(8).chain((res):Parser<string,unknown> => {
         if (!res) throw new Error(`RawString: got an undefined`);
-        if (res === n) return succeed(n);
+        if (res === n) return succeed(String.fromCharCode(n));
         return fail(
           `RawString: expected the character '${String.fromCharCode(
             n
           )} but got '${String.fromCharCode(res)}'`
         );
       });
-    });
-  return sequence(byteParsers);
+    })
+  return sequence(byteParsers).map(res => res?.join(''));
 };
 
 export const fail = (e: string) => new Parser((s) => s.updateError(e));
