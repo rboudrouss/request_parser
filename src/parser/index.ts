@@ -5,5 +5,5 @@ https://gitlab.com/yeetsquared/arcsquared/-/project_members
 */
 export * from "./pComb";
 export * from "./pGen";
-export * from "./pBin"
+export * from "./pBin";
 export * from "./utils";

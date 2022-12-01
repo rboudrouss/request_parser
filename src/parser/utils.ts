@@ -24,9 +24,13 @@ export const getNextCharWidth = (index: number, dataView: DataView) => {
   return 1;
 };
 
-export const getUtf8Char = (index: number, length: number, dataView: DataView) => {
+export const getUtf8Char = (
+  index: number,
+  length: number,
+  dataView: DataView
+) => {
   const bytes = Uint8Array.from({ length }, (_, i) =>
-    dataView.getUint8(index + i),
+    dataView.getUint8(index + i)
   );
   return decoder.decode(bytes);
 };

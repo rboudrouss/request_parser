@@ -1,4 +1,3 @@
-import Parser from "./parser";
 import { encoder } from "./utils";
 
 export type PSProps<R, D> = {
@@ -14,8 +13,8 @@ export type PSProps<R, D> = {
 
 export enum InputTypes {
   STRING = "string",
-  // ARRAY_BUFFER = 'arrayBuffer',
-  // TYPED_ARRAY = 'typedArray',
+  ARRAY_BUFFER = "arrayBuffer",
+  TYPED_ARRAY = "typedArray",
   DATA_VIEW = "dataView",
   NUMBER = "number",
 }
@@ -31,9 +30,20 @@ export type TypedArray =
   | Float32Array
   | Float64Array;
 
-export type InputType = string | DataView | number; // | ArrayBuffer | TypedArray;
+export const isTypedArray = (x: any) =>
+  x instanceof Uint8Array ||
+  x instanceof Uint8ClampedArray ||
+  x instanceof Int8Array ||
+  x instanceof Uint16Array ||
+  x instanceof Int16Array ||
+  x instanceof Uint32Array ||
+  x instanceof Int32Array ||
+  x instanceof Float32Array ||
+  x instanceof Float64Array;
 
-export default class ParserState<R, D=any> {
+export type InputType = string | DataView | number | ArrayBuffer | TypedArray;
+
+export default class ParserState<R, D = any> {
   dataView: DataView;
   inputType: InputType;
 
@@ -129,6 +139,12 @@ export default class ParserState<R, D=any> {
       let buffer = new ArrayBuffer(target);
       dataView = new DataView(buffer, 0);
       inputType = InputTypes.NUMBER;
+    } else if (target instanceof ArrayBuffer) {
+      dataView = new DataView(target, 0);
+      inputType = InputTypes.ARRAY_BUFFER;
+    } else if (isTypedArray(target)) {
+      dataView = new DataView(target.buffer, 0);
+      inputType = InputTypes.TYPED_ARRAY;
     } else if (target instanceof DataView) {
       dataView = target;
       inputType = InputTypes.DATA_VIEW;

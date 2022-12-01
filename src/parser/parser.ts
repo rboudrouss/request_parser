@@ -13,7 +13,7 @@ export type PairedParsers<D, R> = { [K in keyof R]: [string, Parser<R[K], D>] };
 /** An object of results indexed by string keys. */
 export type PairedResults<R> = { [key: string]: R[keyof R] };
 
-export default class Parser<R, D=any> {
+export default class Parser<R, D = any> {
   pf: ParsingFunction<R, D>;
 
   constructor(pf: ParsingFunction<R, D>) {
@@ -53,13 +53,10 @@ export default class Parser<R, D=any> {
 
   errorMap(fn: (s: ParserState<R, D>) => string): Parser<R, D> {
     const p = this.pf;
-    return new Parser(function Parser$errorMap$state(
-      state,
-    ): ParserState<R,D> {
+    return new Parser(function Parser$errorMap$state(state): ParserState<R, D> {
       const nextState = p(state);
-      if (!nextState.isError) return nextState as unknown as ParserState<R,D>;
-      return nextState.updateError(fn(nextState))
-
+      if (!nextState.isError) return nextState as unknown as ParserState<R, D>;
+      return nextState.updateError(fn(nextState));
     });
   }
 }
