@@ -33,7 +33,7 @@ export type TypedArray =
 
 export type InputType = string | DataView | number; // | ArrayBuffer | TypedArray;
 
-export default class ParserState<R, D> {
+export default class ParserState<R, D=any> {
   dataView: DataView;
   inputType: InputType;
 

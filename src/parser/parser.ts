@@ -13,7 +13,7 @@ export type PairedParsers<D, R> = { [K in keyof R]: [string, Parser<R[K], D>] };
 /** An object of results indexed by string keys. */
 export type PairedResults<R> = { [key: string]: R[keyof R] };
 
-export default class Parser<R, D> {
+export default class Parser<R, D=any> {
   pf: ParsingFunction<R, D>;
 
   constructor(pf: ParsingFunction<R, D>) {
@@ -28,7 +28,7 @@ export default class Parser<R, D> {
     const pf = this.pf;
     return new Parser((state) => {
       const newState = pf(state);
-      if (newState.isError) return newState as unknown as ParserState<T,D>;
+      if (newState.isError) return newState as unknown as ParserState<T, D>;
       return newState.updateResult(fn(newState.result));
     });
   }
@@ -46,8 +46,20 @@ export default class Parser<R, D> {
     const p = this.pf;
     return new Parser((state) => {
       const newState = p(state);
-      if (newState.isError) return newState as unknown as ParserState<R2,D>;
+      if (newState.isError) return newState as unknown as ParserState<R2, D>;
       return fn(newState.result).pf(newState);
+    });
+  }
+
+  errorMap(fn: (s: ParserState<R, D>) => string): Parser<R, D> {
+    const p = this.pf;
+    return new Parser(function Parser$errorMap$state(
+      state,
+    ): ParserState<R,D> {
+      const nextState = p(state);
+      if (!nextState.isError) return nextState as unknown as ParserState<R,D>;
+      return nextState.updateError(fn(nextState))
+
     });
   }
 }
