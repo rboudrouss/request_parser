@@ -10,7 +10,7 @@ let parser = sequence(
   tup(
     str("nyah"),
     str("~~"),
-    sequence(Array.from({length:2}, () => Bit))
+    sequence(Array.from({length:8}, () => Bit))
   )
 );
 console.log(parser.run("nyah~~a"));

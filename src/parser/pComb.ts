@@ -1,6 +1,5 @@
 import Parser, { PairedParsers, PairedResults, ParserTuple } from "./parser";
-import { updateError, updatePS, updateResult } from "./pState";
-import { ParserState } from "./types";
+import ParserState from "./pState";
 import { encoder, getString } from "./utils";
 
 /** Takes an array of parsers and composes them left to right, so each parser's return value is passed into the next one in the chain. The result is a new parser that, when run, yields the result of the final parser in the chain. */
@@ -20,9 +19,9 @@ export const sequence = <R extends any[], D>(parsers: ParserTuple<R, D>) =>
 
     for (const parser of parsers) {
       const out = parser.pf(nextState);
-      if (out.error) return results ? updateResult(out, results) : out;
+      if (out.error) return results ? out.updateResult(results) : out;
       nextState = out;
       results.push(out.result);
     }
-    return updateResult(nextState, results);
+    return nextState.updateResult(results);
   }) as Parser<R, D>;
