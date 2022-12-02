@@ -150,7 +150,6 @@ export function choice(parsers: Parser<any>[]): Parser<any> {
   });
 }
 
-// between :: Parser e a s -> Parser e b s -> Parser e c s -> Parser e b s
 export function between<L, T, R>(
   leftParser: Parser<L>
 ): (rightParser: Parser<R>) => (parser: Parser<T>) => Parser<T> {
@@ -161,7 +160,6 @@ export function between<L, T, R>(
   };
 }
 
-// everythingUntil :: Parser e a s -> Parser e String s
 export function everythingUntil(parser: Parser<any>): Parser<number[]> {
   return new Parser((state) => {
     if (state.isError) return state;
@@ -195,7 +193,6 @@ export function everythingUntil(parser: Parser<any>): Parser<number[]> {
   });
 }
 
-// anythingExcept :: Parser e a s -> Parser e Char s
 export const anythingExcept = function anythingExcept(
   parser: Parser<any>
 ): Parser<number> {
@@ -255,7 +252,6 @@ export function sepBy<S, T, D>(
   };
 }
 
-// sepBy1 :: Parser e a s -> Parser e b s -> Parser e [b] s
 export const sepBy1 = function sepBy1<S, T>(
   sepParser: Parser<S>
 ): (valueParser: Parser<T>) => Parser<T[]> {
@@ -284,7 +280,6 @@ export function possibly<T, D>(parser: Parser<T, D>): Parser<T | null, D> {
   });
 };
 
-// skip :: Parser e a s -> Parser e a s
 export function skip<D>(parser: Parser<any, D>): Parser<null, D> {
   return new Parser(function skip$state(state) {
     if (state.isError) return state;

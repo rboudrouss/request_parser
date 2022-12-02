@@ -176,15 +176,6 @@ export function regex(re: RegExp): Parser<string> {
     );
   });
 }
-export function skip< D>(parser: Parser<any,  D>): Parser<null,  D> {
-  return new Parser(function skip$state(state) {
-    if (state.isError) return state;
-    const nextState = parser.pf(state);
-    if (nextState.isError) return nextState;
-
-    return nextState.updateResult(state.result);
-  });
-};
 
 export const startOfInput = new Parser<null, string>(function startOfInput$state(state) {
   if (state.isError) return state;
