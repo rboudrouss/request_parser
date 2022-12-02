@@ -1,8 +1,12 @@
-import { Bit, RawString, sequence, str, tup, Uint } from "./parser";
+import { Bit, Int, RawString, sequence, str, tup, Uint } from "./parser";
 
 console.log("test");
 
-let parser = sequence(
-  tup(Uint(4), Uint(2), Uint(2), RawString("yah"), Uint(8))
-);
+let parser = sequence(tup(
+  Uint(6),
+  RawString("\x9EXZ"),
+  Int(10),
+  str("~a")
+));
+
 console.log(parser.run("nyah~~a"));

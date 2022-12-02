@@ -1,6 +1,7 @@
 import { isError } from "util";
 import Parser, { ParserTuple } from "./parser";
 import ParserState from "./pState";
+import { tup } from "./utils";
 
 /** Takes an array of parsers and composes them left to right, so each parser's return value is passed into the next one in the chain. The result is a new parser that, when run, yields the result of the final parser in the chain. */
 export const pipe = <R extends any[], D>(parsers: ParserTuple<R, D>) =>
@@ -127,3 +128,87 @@ export function errorMapTo<D>(
     return state.updateError(fn(state.error, state.index, state.data));
   });
 }
+
+export function choice(parsers: Parser<any>[]): Parser<any> {
+  if (parsers.length === 0) throw new Error(`List of parsers can't be empty.`);
+
+  return new Parser(function choice$state(state) {
+    if (state.isError) return state;
+
+    let error = null;
+    for (const parser of parsers) {
+      const out = parser.pf(state);
+
+      if (!out.isError) return out;
+
+      if (error === null || (error && out.index > error.index)) {
+        error = out;
+      }
+    }
+
+    return error as ParserState<any, any>;
+  });
+}
+
+// between :: Parser e a s -> Parser e b s -> Parser e c s -> Parser e b s
+export function between<L, T, R>(
+  leftParser: Parser<L>
+): (rightParser: Parser<R>) => (parser: Parser<T>) => Parser<T> {
+  return function between$rightParser(rightParser) {
+    return function between$parser(parser) {
+      return sequence(tup(leftParser, parser, rightParser)).map(([_, x]) => x);
+    };
+  };
+}
+
+// everythingUntil :: Parser e a s -> Parser e String s
+export function everythingUntil(parser: Parser<any>): Parser<number[]> {
+  return new Parser((state) => {
+    if (state.isError) return state;
+
+    const results = [];
+    let nextState = state;
+
+    while (true) {
+      const out = parser.pf(nextState);
+
+      if (out.isError) {
+        const { index, dataView } = nextState;
+
+        if (dataView.byteLength <= index) {
+          return nextState.updateError(
+            `ParseError 'everythingUntil' (position ${nextState.index}): Unexpected end of input.`
+          );
+        }
+
+        const val = dataView.getUint8(index);
+        if (val) {
+          results.push(val);
+          nextState = nextState.updateByteIndex(1).updateResult(val);
+        }
+      } else {
+        break;
+      }
+    }
+
+    return nextState.updateResult(results);
+  });
+}
+
+// anythingExcept :: Parser e a s -> Parser e Char s
+export const anythingExcept = function anythingExcept(
+  parser: Parser<any>
+): Parser<number> {
+  return new Parser(function anythingExcept$state(state) {
+    if (state.isError) return state;
+    const { dataView, index } = state;
+
+    const out = parser.pf(state);
+    if (out.isError)
+      return state.updateByteIndex(1).updateResult(dataView.getUint8(index));
+
+    return state.updateError(
+      `ParseError 'anythingExcept' (position ${index}): Matched '${out.result}' from the exception parser`
+    );
+  });
+};
