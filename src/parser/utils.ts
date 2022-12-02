@@ -58,3 +58,5 @@ export const reDigits = /^[0-9]+/;
 export const reLetter = /[a-zA-Z]/;
 export const reLetters = /^[a-zA-Z]+/;
 export const reWhitespaces = /^\s+/;
+export const reHexDigit = /[0-9a-fA-F]/
+export const reHexDigits = /^[0-9a-fA-F]+/

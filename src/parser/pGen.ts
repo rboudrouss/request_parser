@@ -8,6 +8,11 @@ import {
   getNextCharWidth,
   getString,
   getUtf8Char,
+  reDigit,
+  reDigits,
+  reHexDigit,
+  reLetter,
+  reLetters,
   reWhitespaces,
 } from "./utils";
 
@@ -159,11 +164,9 @@ export function regex(re: RegExp): Parser<string> {
     if (rest.length >= 1) {
       const match = rest.match(re);
       return match
-        ? state.updateResult(
-            match[0]
-          ).updateByteIndex(
-            encoder.encode(match[0]).byteLength
-          )
+        ? state
+            .updateResult(match[0])
+            .updateByteIndex(encoder.encode(match[0]).byteLength)
         : state.updateError(
             `ParseError (position ${index}): Expecting string matching '${re}', got '${rest.slice(
               0,
@@ -177,40 +180,145 @@ export function regex(re: RegExp): Parser<string> {
   });
 }
 
-export const startOfInput = new Parser<null, string>(function startOfInput$state(state) {
-  if (state.isError) return state;
-  const { index } = state;
-  if (index > 0) {
-    return state.updateError(
-      `ParseError 'startOfInput' (position ${index}): Expected start of input'`,
-    );
+export const startOfInput = new Parser<null, string>(
+  function startOfInput$state(state) {
+    if (state.isError) return state;
+    const { index } = state;
+    if (index > 0) {
+      return state.updateError(
+        `ParseError 'startOfInput' (position ${index}): Expected start of input'`
+      );
+    }
+
+    return state;
   }
+);
 
-  return state;
-});
-
-export const endOfInput = new Parser<null, string>(function endOfInput$state(state) {
+export const endOfInput = new Parser<null, string>(function endOfInput$state(
+  state
+) {
   if (state.isError) return state;
   const { dataView, index, inputType } = state;
   if (index !== dataView.byteLength) {
-    const errorByte = inputType === InputTypes.STRING
-      ? String.fromCharCode(dataView.getUint8(index))
-      : `0x${dataView.getUint8(index).toString(16).padStart(2, '0')}`;
+    const errorByte =
+      inputType === InputTypes.STRING
+        ? String.fromCharCode(dataView.getUint8(index))
+        : `0x${dataView.getUint8(index).toString(16).padStart(2, "0")}`;
 
     return state.updateError(
-      `ParseError 'endOfInput' (position ${index}): Expected end of input but got '${errorByte}'`,
+      `ParseError 'endOfInput' (position ${index}): Expected end of input but got '${errorByte}'`
     );
   }
 
   return state.updateResult(null);
 });
 
-export const whitespace: Parser<string> = regex(reWhitespaces)
-  // Keeping this error even though the implementation no longer uses many1. Will change it to something more appropriate in the next major release.
-  .errorMap(
-    ({ index }) =>
-      `ParseError 'many1' (position ${index}): Expecting to match at least one value`,
+export const whitespace: Parser<string> = regex(reWhitespaces);
+
+export const optionalWhitespace: Parser<string | null> = possibly(
+  whitespace
+).map((x) => x || "");
+
+
+export const digit: Parser<string> = new Parser(function digit$state(state) {
+  if (state.isError) return state;
+
+  const { dataView, index } = state;
+
+  if (dataView.byteLength > index) {
+    const charWidth = getNextCharWidth(index, dataView);
+    if (index + charWidth <= dataView.byteLength) {
+      const char = getUtf8Char(index, charWidth, dataView);
+      return dataView.byteLength && char && reDigit.test(char)
+        ? state.updateResult(char).updateByteIndex(charWidth)
+        : state.updateError(
+            `ParseError (position ${index}): Expecting digit, got '${char}'`
+          );
+    }
+  }
+
+  return state.updateError(
+    `ParseError (position ${index}): Expecting digit, but got end of input.`
   );
-export const optionalWhitespace: Parser<string | null> = possibly(whitespace).map(x => x || '');
+});
+
+export const digits: Parser<string> = regex(reDigits).errorMap(
+  ({ index }) => `ParseError (position ${index}): Expecting digits`
+);
+
+export const letter: Parser<string> = new Parser(function letter$state(state) {
+  if (state.isError) return state;
+
+  const { index, dataView } = state;
+
+  if (dataView.byteLength > index) {
+    const charWidth = getNextCharWidth(index, dataView);
+    if (index + charWidth <= dataView.byteLength) {
+      const char = getUtf8Char(index, charWidth, dataView);
+      return dataView.byteLength && char && reLetter.test(char)
+        ? state.updateResult(char).updateByteIndex(charWidth)
+        : state.updateError(
+            `ParseError (position ${index}): Expecting letter, got '${char}'`
+          );
+    }
+  }
+
+  return state.updateError(
+    `ParseError (position ${index}): Expecting letter, but got end of input.`
+  );
+});
+
+export const letters: Parser<string> = regex(reLetters).errorMap(
+  ({ index }) => `ParseError (position ${index}): Expecting letters`
+);
+
+export function anyOfString(s: string): Parser<string> {
+  return new Parser(function anyOfString$state(state) {
+    if (state.isError) return state;
+
+    const { dataView, index } = state;
+
+    if (dataView.byteLength > index) {
+      const charWidth = getNextCharWidth(index, dataView);
+      if (index + charWidth <= dataView.byteLength) {
+        const char = getUtf8Char(index, charWidth, dataView);
+        return s.includes(char)
+          ? state.updateResult(char).updateByteIndex(charWidth)
+          : state.updateError(
+              `ParseError (position ${index}): Expecting any of the string "${s}", got ${char}`
+            );
+      }
+    }
+
+    return state.updateError(
+      `ParseError (position ${index}): Expecting any of the string "${s}", but got end of input.`
+    );
+  });
+}
+export const hexDigit: Parser<string> = new Parser(function letter$state(state) {
+  if (state.isError) return state;
+
+  const { index, dataView } = state;
+
+  if (dataView.byteLength > index) {
+    const charWidth = getNextCharWidth(index, dataView);
+    if (index + charWidth <= dataView.byteLength) {
+      const char = getUtf8Char(index, charWidth, dataView);
+      return dataView.byteLength && char && reHexDigit.test(char)
+        ? state.updateResult(char).updateByteIndex(charWidth)
+        : state.updateError(
+            `ParseError (position ${index}): Expecting letter, got '${char}'`
+          );
+    }
+  }
+
+  return state.updateError(
+    `ParseError (position ${index}): Expecting letter, but got end of input.`
+  );
+});
 
 
+export const hexDigits: Parser<string> = regex(reHexDigit)
+.errorMap(
+  ({ index }) => `ParseError (position ${index}): Expecting Hexdigits`
+)
