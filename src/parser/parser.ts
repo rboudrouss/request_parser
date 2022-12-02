@@ -59,4 +59,18 @@ export default class Parser<R, D = any> {
       return nextState.updateError(fn(nextState));
     });
   }
+  fork<F>(
+    target: InputType,
+    errorFn: (errorMsg: string | null, parsingState: ParserState<R,  D>) => F,
+    successFn: (result: R, parsingState: ParserState<R,  D>) => F
+  ) {
+    const state = ParserState.init(target);
+    const newState = this.pf(state);
+
+    if (newState.isError) {
+      return errorFn(newState.error, newState);
+    }
+
+    return successFn(newState.result, newState);
+  }
 }

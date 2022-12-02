@@ -212,3 +212,121 @@ export const anythingExcept = function anythingExcept(
     );
   });
 };
+
+export function sepBy<S, T, D>(
+  sepParser: Parser<S, D>
+): (valueParser: Parser<T, D>) => Parser<T[]> {
+  return function sepBy$valParser(valueParser) {
+    return new Parser<T[]>(function sepBy$valParser$state(state) {
+      if (state.isError) return state;
+
+      let nextState: ParserState<S | T, D> = state;
+      let error = null;
+      const results: T[] = [];
+
+      while (true) {
+        const valState = valueParser.pf(nextState);
+        const sepState = sepParser.pf(valState);
+
+        if (valState.isError) {
+          error = valState;
+          break;
+        } else {
+          results.push(valState.result);
+        }
+
+        if (sepState.isError) {
+          nextState = valState;
+          break;
+        }
+
+        nextState = sepState;
+      }
+
+      if (error) {
+        if (results.length === 0) {
+          return state.updateResult(results) as ParserState<T[], D>;
+        }
+        return error;
+      }
+
+      return nextState.updateResult(results);
+    });
+  };
+}
+
+// sepBy1 :: Parser e a s -> Parser e b s -> Parser e [b] s
+export const sepBy1 = function sepBy1<S, T>(
+  sepParser: Parser<S>
+): (valueParser: Parser<T>) => Parser<T[]> {
+  return function sepBy1$valParser(valueParser) {
+    return new Parser(function sepBy1$valParser$state(state) {
+      if (state.isError) return state;
+
+      const out = sepBy(sepParser)(valueParser).pf(state);
+      if (out.isError) return out;
+      if (out.result.length === 0) {
+        return state.updateError(
+          `ParseError 'sepBy1' (position ${state.index}): Expecting to match at least one separated value`
+        );
+      }
+      return out;
+    });
+  };
+};
+
+export function possibly<T, D>(parser: Parser<T, D>): Parser<T | null, D> {
+  return new Parser(function possibly$state(state) {
+    if (state.isError) return state;
+
+    const nextState = parser.pf(state);
+    return nextState.isError ? state.updateResult(null) : nextState;
+  });
+};
+
+// skip :: Parser e a s -> Parser e a s
+export function skip<D>(parser: Parser<any, D>): Parser<null, D> {
+  return new Parser(function skip$state(state) {
+    if (state.isError) return state;
+    const nextState = parser.pf(state);
+    if (nextState.isError) return nextState;
+
+    return nextState.updateResult(state.result);
+  });
+}
+type ParserFn<T> = (_yield:<K>(parser:Parser<K>)=>K)=>T;
+
+export function coroutine<T>(parserFn: ParserFn<T>): Parser<T> {
+  return new Parser(function coroutine$state(state) {
+    let currentValue;
+    let currentState = state;
+    
+    const run = <T>(parser: Parser<T>) => {
+      if (!(parser && parser instanceof Parser)) {
+        throw new Error(
+          `[coroutine] passed values must be Parsers, got ${parser}.`,
+        );
+      }
+      const newState = parser.pf(currentState);
+      if (newState.isError) {
+        throw newState;
+      } else {
+        currentState = newState;
+      }
+      currentValue = currentState.result;
+      return currentValue;
+    }
+
+    try {
+      const result = parserFn(run);
+      return currentState.updateResult(result);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw e;
+      } else {
+        return e as ParserState<any, any>;
+      }
+    }
+  });
+};
+

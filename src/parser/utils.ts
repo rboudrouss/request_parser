@@ -53,3 +53,8 @@ export const getCharacterLength = (str: string) => {
 export function tup<T extends any[]>(...data: T) {
   return data;
 }
+export const reDigit = /[0-9]/;
+export const reDigits = /^[0-9]+/;
+export const reLetter = /[a-zA-Z]/;
+export const reLetters = /^[a-zA-Z]+/;
+export const reWhitespaces = /^\s+/;

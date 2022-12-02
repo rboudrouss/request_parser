@@ -1,6 +1,6 @@
 import Parser, { ParsingFunction } from "./parser";
-import { everythingUntil, sequence } from "./pComb";
-import ParserState from "./pState";
+import { everythingUntil, possibly, sequence } from "./pComb";
+import { InputTypes } from "./pState";
 import {
   decoder,
   encoder,
@@ -8,7 +8,7 @@ import {
   getNextCharWidth,
   getString,
   getUtf8Char,
-  tup,
+  reWhitespaces,
 } from "./utils";
 
 /* doesn't support the bitOffset <!>*/
@@ -107,13 +107,11 @@ export const anyChar: Parser<string> = new Parser(function anyChar$state(
   );
 });
 
-// everyCharUntil :: Parser e a s -> Parser e String s
 export const everyCharUntil = (parser: Parser<any>) =>
   everythingUntil(parser).map((results) =>
     decoder.decode(Uint8Array.from(results))
   );
 
-// anyCharExcept :: Parser e a s -> Parser e Char s
 export const anyCharExcept = function anyCharExcept(
   parser: Parser<any>
 ): Parser<number> {
@@ -140,3 +138,88 @@ export const anyCharExcept = function anyCharExcept(
     );
   });
 };
+
+export function regex(re: RegExp): Parser<string> {
+  const typeofre = Object.prototype.toString.call(re);
+  if (typeofre !== "[object RegExp]") {
+    throw new TypeError(
+      `regex must be called with a Regular Expression, but got ${typeofre}`
+    );
+  }
+
+  if (re.toString()[1] !== "^") {
+    throw new Error(`regex parsers must contain '^' start assertion.`);
+  }
+
+  return new Parser(function regex$state(state) {
+    if (state.isError) return state;
+    const { dataView, index } = state;
+    const rest = getString(index, dataView.byteLength - index, dataView);
+
+    if (rest.length >= 1) {
+      const match = rest.match(re);
+      return match
+        ? state.updateResult(
+            match[0]
+          ).updateByteIndex(
+            encoder.encode(match[0]).byteLength
+          )
+        : state.updateError(
+            `ParseError (position ${index}): Expecting string matching '${re}', got '${rest.slice(
+              0,
+              5
+            )}...'`
+          );
+    }
+    return state.updateError(
+      `ParseError (position ${index}): Expecting string matching '${re}', but got end of input.`
+    );
+  });
+}
+export function skip< D>(parser: Parser<any,  D>): Parser<null,  D> {
+  return new Parser(function skip$state(state) {
+    if (state.isError) return state;
+    const nextState = parser.pf(state);
+    if (nextState.isError) return nextState;
+
+    return nextState.updateResult(state.result);
+  });
+};
+
+export const startOfInput = new Parser<null, string>(function startOfInput$state(state) {
+  if (state.isError) return state;
+  const { index } = state;
+  if (index > 0) {
+    return state.updateError(
+      `ParseError 'startOfInput' (position ${index}): Expected start of input'`,
+    );
+  }
+
+  return state;
+});
+
+export const endOfInput = new Parser<null, string>(function endOfInput$state(state) {
+  if (state.isError) return state;
+  const { dataView, index, inputType } = state;
+  if (index !== dataView.byteLength) {
+    const errorByte = inputType === InputTypes.STRING
+      ? String.fromCharCode(dataView.getUint8(index))
+      : `0x${dataView.getUint8(index).toString(16).padStart(2, '0')}`;
+
+    return state.updateError(
+      `ParseError 'endOfInput' (position ${index}): Expected end of input but got '${errorByte}'`,
+    );
+  }
+
+  return state.updateResult(null);
+});
+
+export const whitespace: Parser<string> = regex(reWhitespaces)
+  // Keeping this error even though the implementation no longer uses many1. Will change it to something more appropriate in the next major release.
+  .errorMap(
+    ({ index }) =>
+      `ParseError 'many1' (position ${index}): Expecting to match at least one value`,
+  );
+export const optionalWhitespace: Parser<string | null> = possibly(whitespace).map(x => x || '');
+
+
