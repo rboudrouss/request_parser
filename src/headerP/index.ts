@@ -14,8 +14,8 @@ export const MAC_parser = sequence(Array.from({ length: 6 }, () => Uint(8)));
 export const IP_parser = sequence(Array.from({ length: 4 }, () => Uint(8)));
 
 export const ethernet_parser = sequence([
-  MAC_parser, // source MAC
   MAC_parser, // dest MAC
+  MAC_parser, // source MAC
   Uint(16), // type
 ]);
 
