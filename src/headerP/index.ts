@@ -1,10 +1,17 @@
-import { Bit, sequence, Uint, Zero } from "../parser";
+import {
+  Bit,
+  everythingUntil,
+  many1,
+  RawString,
+  sequence,
+  Uint,
+  Zero,
+} from "../parser";
 
-export * from "./utils"
+export * from "./utils";
 
-
-export const MAC_parser = sequence(Array.from({ length: 6 }, () => Uint(8)))
-export const IP_parser = sequence(Array.from({ length: 4 }, () => Uint(8)))
+export const MAC_parser = sequence(Array.from({ length: 6 }, () => Uint(8)));
+export const IP_parser = sequence(Array.from({ length: 4 }, () => Uint(8)));
 
 export const ethernet_parser = sequence([
   MAC_parser, // source MAC
@@ -34,13 +41,14 @@ export const ip4_parser = sequence([
 ]);
 
 export const tcp_parser = sequence([
-    Uint(16), // source port
-    Uint(16), // dest port
-    Uint(32), // Sequence number
-    Uint(32), // ACK number
-    Uint(4), // data offset
-    sequence(Array.from({length:3}, () => Zero)), // 3 reserved bits, should be 0
-    sequence([ // Flags
+  Uint(16), // source port
+  Uint(16), // dest port
+  Uint(32), // Sequence number
+  Uint(32), // ACK number
+  Uint(4), // data offset
+  sequence(Array.from({ length: 3 }, () => Zero)), // 3 reserved bits, should be 0
+  sequence([
+    // Flags
     Bit, // NS
     Bit, // CWR
     Bit, // ECE
@@ -50,7 +58,16 @@ export const tcp_parser = sequence([
     Bit, // RST
     Bit, // SYN
     Bit, // FIN
-    ]),
-    Uint(16), // Window Size
-    Uint(16), // Checksum
-])
+  ]),
+  Uint(16), // Window Size
+  Uint(16), // Checksum
+  Uint(16), // urgent pointer
+]);
+
+export const http_parser = everythingUntil(RawString("\x0D\x0A\x0D\x0A")).map(
+  (x) =>
+    x
+      .map((e) => String.fromCharCode(e))
+      .join("")
+      .split("\r\n")
+);

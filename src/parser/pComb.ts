@@ -170,22 +170,20 @@ export function everythingUntil(parser: Parser<any>): Parser<number[]> {
     while (true) {
       const out = parser.pf(nextState);
 
-      if (out.isError) {
-        const { index, dataView } = nextState;
+      if (!out.isError) break;
 
-        if (dataView.byteLength <= index) {
-          return nextState.updateError(
-            `ParseError 'everythingUntil' (position ${nextState.index}): Unexpected end of input.`
-          );
-        }
+      const { index, dataView } = nextState;
 
-        const val = dataView.getUint8(index);
-        if (val) {
-          results.push(val);
-          nextState = nextState.updateByteIndex(1).updateResult(val);
-        }
-      } else {
-        break;
+      if (dataView.byteLength <= index) {
+        return nextState.updateError(
+          `ParseError 'everythingUntil' (position ${nextState.index}): Unexpected end of input.`
+        );
+      }
+
+      const val = dataView.getUint8(index);
+      if (val) {
+        results.push(val);
+        nextState = nextState.updateByteIndex(1).updateResult(val);
       }
     }
 
@@ -278,7 +276,7 @@ export function possibly<T, D>(parser: Parser<T, D>): Parser<T | null, D> {
     const nextState = parser.pf(state);
     return nextState.isError ? state.updateResult(null) : nextState;
   });
-};
+}
 
 export function skip<D>(parser: Parser<any, D>): Parser<null, D> {
   return new Parser(function skip$state(state) {
@@ -289,17 +287,17 @@ export function skip<D>(parser: Parser<any, D>): Parser<null, D> {
     return nextState.updateResult(state.result);
   });
 }
-type ParserFn<T> = (_yield:<K>(parser:Parser<K>)=>K)=>T;
+type ParserFn<T> = (_yield: <K>(parser: Parser<K>) => K) => T;
 
 export function coroutine<T>(parserFn: ParserFn<T>): Parser<T> {
   return new Parser(function coroutine$state(state) {
     let currentValue;
     let currentState = state;
-    
+
     const run = <T>(parser: Parser<T>) => {
       if (!(parser && parser instanceof Parser)) {
         throw new Error(
-          `[coroutine] passed values must be Parsers, got ${parser}.`,
+          `[coroutine] passed values must be Parsers, got ${parser}.`
         );
       }
       const newState = parser.pf(currentState);
@@ -310,7 +308,7 @@ export function coroutine<T>(parserFn: ParserFn<T>): Parser<T> {
       }
       currentValue = currentState.result;
       return currentValue;
-    }
+    };
 
     try {
       const result = parserFn(run);
@@ -323,5 +321,4 @@ export function coroutine<T>(parserFn: ParserFn<T>): Parser<T> {
       }
     }
   });
-};
-
+}

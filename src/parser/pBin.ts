@@ -88,7 +88,7 @@ export const RawString = (s: string) => {
         return fail(
           `RawString: expected the character '${String.fromCharCode(
             n
-          )} but got '${String.fromCharCode(res)}'`
+          )}' but got '${String.fromCharCode(res)}'`
         );
       });
     });

@@ -95,6 +95,7 @@ export default class ParserState<R, D = any> {
     return new ParserState({
       ...this.props,
       error: e,
+      isError: true
     });
   }
 
