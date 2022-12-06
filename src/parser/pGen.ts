@@ -11,6 +11,7 @@ import {
   reDigit,
   reDigits,
   reHexDigit,
+  reHexDigits,
   reLetter,
   reLetters,
   reWhitespaces,
@@ -44,7 +45,6 @@ export const str = (s: string) => {
         ? PS.updateByteIndex(es.byteLength).updateResult(s)
         : PS.updateError(`[str] Expected '${s}' got '${sai}'`);
 
-    console.log("nyah", PS.bitIndex);
 
     return out;
   }) as ParsingFunction<string, null>);
@@ -219,7 +219,6 @@ export const optionalWhitespace: Parser<string | null> = possibly(
   whitespace
 ).map((x) => x || "");
 
-
 export const digit: Parser<string> = new Parser(function digit$state(state) {
   if (state.isError) return state;
 
@@ -295,7 +294,9 @@ export function anyOfString(s: string): Parser<string> {
     );
   });
 }
-export const hexDigit: Parser<string> = new Parser(function letter$state(state) {
+export const hexDigit: Parser<string> = new Parser(function letter$state(
+  state
+) {
   if (state.isError) return state;
 
   const { index, dataView } = state;
@@ -317,8 +318,13 @@ export const hexDigit: Parser<string> = new Parser(function letter$state(state) 
   );
 });
 
-
-export const hexDigits: Parser<string> = regex(reHexDigit)
-.errorMap(
+export const hexDigits: Parser<string> = regex(reHexDigits).errorMap(
   ({ index }) => `ParseError (position ${index}): Expecting Hexdigits`
-)
+);
+
+export const logState = (msg = "") =>
+  new Parser((PS) => {
+    console.log("logState : ", msg);
+    console.log(PS);
+    return PS;
+  });
