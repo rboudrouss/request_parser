@@ -5,8 +5,8 @@ import { many } from "./parser";
 function cli() {
   if (process.argv.length < 4) {
     console.log(
-      "Please indicate the trace file as `node cli.js a/f <input file> <output file>`.",
-      "\nThe output file is optionnal. a is for analyse, f is for FLECHE"
+      "Please indicate the trace file as `node cli.js <a/f> <input file> <output file>`.",
+      "\nThe output file is optional. a is for analyse, f is for FLECHE"
     );
     exit(1);
   }
@@ -47,7 +47,7 @@ function cli() {
           15
         )} --> ${ip4_frame[12].description.padStart(
           15
-        )} : Insuported Transport layer (not tcp)`;
+        )} : Unsuported Transport layer (not tcp)`;
 
       let tcp_layer: {
         name: string;
