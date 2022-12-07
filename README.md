@@ -24,7 +24,9 @@ le fichier d'ouput est optionnel, si il y en a pas ça va print dans le terminal
 
 PS: ts-node transpile sur le moment le code en javascript ce qui peut s'avérer lent surtout sur des petites machines. Il est possible de *build* le projet en JS pour l'excuter plus rapidement. 
 
-Pour se faire dans le root du projet taper `npm build`. ça va transpiler le code, et une fois cela fait il suffit d'excécuter avec node le fichier `build/cli.js`
+Pour se faire dans le root du projet taper `npm build`. ça va transpiler le code, et une fois cela fait il suffit d'excécuter avec node le fichier `build/cli.js`.
+
+Il y a des fichiers d'exemple à excecuter dans le dossier `src/data/txt`
 
 
 Le projet à aussi une version web app (WIP), vous pouvez regarder le code dans la [branch web_app](https://github.com/rboudrouss/request_parser/tree/webapp)
