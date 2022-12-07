@@ -45,7 +45,6 @@ export const str = (s: string) => {
         ? PS.updateByteIndex(es.byteLength).updateResult(s)
         : PS.updateError(`[str] Expected '${s}' got '${sai}'`);
 
-
     return out;
   }) as ParsingFunction<string, null>);
 };
@@ -61,6 +60,7 @@ export const peekInt = new Parser<number, unknown>((state) => {
     `ParseError (position ${index}): Unexpected end of input.`
   );
 });
+
 
 export const fail = (e: string) => new Parser((s) => s.updateError(e));
 
@@ -328,3 +328,10 @@ export const logState = (msg = "") =>
     console.log(PS);
     return PS;
   });
+
+export const getIndex = new Parser((s) =>
+  s.updateResult({
+    bitIndex: s.bitIndex,
+    index: s.index,
+  })
+);

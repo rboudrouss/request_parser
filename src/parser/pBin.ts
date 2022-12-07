@@ -1,6 +1,6 @@
 import Parser from "./parser";
 import { sequence } from "./pComb";
-import { fail, succeed } from "./pGen";
+import { fail, peekInt, succeed } from "./pGen";
 
 export const Bit = new Parser<number, unknown>((s) => {
   if (s.isError) return s;
@@ -94,8 +94,10 @@ export const RawString = (s: string) => {
   return sequence(byteParsers).map((res) => res?.join(""));
 };
 
-export const readUntilByte = new Parser<number>((s) => {
+export const readUntilByte = new Parser<number|null>((s) => {
   if (s.isError) return s;
+
+  if (s.bitIndex % 8 == 0) return s.updateResult(null);
 
   if (s.index >= s.dataView.byteLength)
     return s.updateError(`readUntilByte: Unexpected end of input`);
@@ -132,7 +134,7 @@ export const readUntilMod32 = readUntilByte.chain(
     })
 );
 
-export const readUntilI = (byteIndex: number) =>
+export const readUntilI = (byteIndex: number): Parser<number[]> =>
   readUntilByte.chain(
     (x) =>
       new Parser((s) => {
@@ -157,3 +159,17 @@ export const readUntilI = (byteIndex: number) =>
         return s.updateByteIndex(nb).updateResult(x ? [x, ...result] : result);
       })
   );
+
+export const peekUInts = (bytes: number) => {
+  if (bytes < 1) throw new Error("peekUInts: n must me > 0");
+
+  return new Parser<number[]>((s) => {
+    let result: number[] = [];
+    if (s.index + bytes > s.dataView.byteLength)
+      return s.updateError("peekUInts: Unexpeted end of input");
+
+    for (let i = 0; i < bytes; i++)
+      result.push(s.dataView.getUint8(s.index + i));
+    return s.updateResult(result);
+  });
+};

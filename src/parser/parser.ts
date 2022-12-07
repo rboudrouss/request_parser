@@ -42,7 +42,7 @@ export default class Parser<R, D = any> {
     });
   }
 
-  chain<R2>(fn: (x?: R) => Parser<R2, D>): Parser<R2, D> {
+  chain<R2>(fn: (x: R) => Parser<R2, D>): Parser<R2, D> {
     const p = this.pf;
     return new Parser((state) => {
       const newState = p(state);

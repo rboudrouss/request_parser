@@ -1,4 +1,3 @@
-import { isError } from "util";
 import Parser, { ParserTuple } from "./parser";
 import ParserState from "./pState";
 import { tup } from "./utils";
