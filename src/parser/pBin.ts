@@ -83,12 +83,11 @@ export const RawString = (s: string) => {
     .map((c) => c.charCodeAt(0))
     .map((n) => {
       return Uint(8).chain((res): Parser<string, unknown> => {
-        if (!res) throw new Error(`RawString: got an undefined`);
         if (res === n) return succeed(String.fromCharCode(n));
         return fail(
           `RawString: expected the character '${String.fromCharCode(
             n
-          )}' but got '${String.fromCharCode(res)}'`
+          )}' but got '${res ? String.fromCharCode(res) : "undefined"}'`
         );
       });
     });

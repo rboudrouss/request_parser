@@ -181,10 +181,8 @@ export function everythingUntil(parser: Parser<any>): Parser<number[]> {
       }
 
       const val = dataView.getUint8(index);
-      if (val) {
-        results.push(val);
-        nextState = nextState.updateByteIndex(1).updateResult(val);
-      }
+      results.push(val);
+      nextState = nextState.updateByteIndex(1).updateResult(val);
     }
 
     return nextState.updateResult(results);

@@ -4,6 +4,7 @@ import {
   many1,
   RawString,
   sequence,
+  succeed,
   Uint,
   Zero,
 } from "../parser";
@@ -62,7 +63,15 @@ export const tcp_parser = sequence([
   Uint(16), // Window Size
   Uint(16), // Checksum
   Uint(16), // urgent pointer
-]);
+]).chain((x) => {
+  if (x && x[4] > 5) {
+    let n = x[4] as number;
+    return sequence(Array.from({ length: n - 5 }, () => Uint(32))).map(
+      (res) => [...x, res]
+    );
+  }
+  return succeed(x);
+});
 
 export const http_parser = everythingUntil(RawString("\x0D\x0A\x0D\x0A")).map(
   (x) =>
