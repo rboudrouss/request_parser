@@ -39,7 +39,16 @@ export const ip4_parser = sequence([
   Uint(16), // header CheckSum
   IP_parser, // source IP
   IP_parser, // Dest IP
-]);
+]).chain((x) => {
+  if (x && x[1] > 5) {
+    let n = x[1] as number;
+    return sequence(Array.from({ length: n - 5 }, () => Uint(32))).map(
+      (res) => [...x, res]
+    );
+  }
+
+  return succeed(x);
+});
 
 export const tcp_parser = sequence([
   Uint(16), // source port
