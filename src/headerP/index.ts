@@ -70,10 +70,15 @@ export const header_parser2 = coroutine((run) => {
   let tcp_frame = null;
   let http_frame = null;
   let unknown_data = null;
+  let peek = null;
 
   const { index, bitIndex } = run(getIndex);
 
-  if (ethernet_frame[3].value !== 0x800) return [ethernet_frame];
+  if (ethernet_frame[3].value !== 0x800)
+    return [
+      ethernet_frame,
+      run(peekUInts(16).map((x) => x.map((e) => e.toString(16)))),
+    ];
 
   ip_frame = run(ip4_parser);
   if (ip_frame[9].value === 0x6) {
@@ -88,8 +93,18 @@ export const header_parser2 = coroutine((run) => {
       .map(tag("Unsuported data"))
   );
 
+  peek = run(peekUInts(16).map((x) => x.map((e) => e.toString(16))));
+
   if (http_frame)
-    return [ethernet_frame, ip_frame, tcp_frame, http_frame, unknown_data];
-  if (tcp_frame) return [ethernet_frame, ip_frame, tcp_frame, unknown_data];
-  return [ethernet_frame, ip_frame, unknown_data];
+    return [
+      ethernet_frame,
+      ip_frame,
+      tcp_frame,
+      http_frame,
+      unknown_data,
+      peek,
+    ];
+  if (tcp_frame)
+    return [ethernet_frame, ip_frame, tcp_frame, unknown_data, peek];
+  return [ethernet_frame, ip_frame, unknown_data, peek];
 });

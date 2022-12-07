@@ -275,15 +275,6 @@ export function possibly<T, D>(parser: Parser<T, D>): Parser<T | null, D> {
   });
 }
 
-export function skip<D>(parser: Parser<any, D>): Parser<null, D> {
-  return new Parser(function skip$state(state) {
-    if (state.isError) return state;
-    const nextState = parser.pf(state);
-    if (nextState.isError) return nextState;
-
-    return nextState.updateResult(state.result);
-  });
-}
 type ParserFn<T> = (_yield: <K>(parser: Parser<K>) => K) => T;
 
 export function coroutine<T>(parserFn: ParserFn<T>): Parser<T> {

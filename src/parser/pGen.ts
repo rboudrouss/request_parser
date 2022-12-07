@@ -61,7 +61,6 @@ export const peekInt = new Parser<number, unknown>((state) => {
   );
 });
 
-
 export const fail = (e: string) => new Parser((s) => s.updateError(e));
 
 export const succeed = <T>(e: T) => new Parser((s) => s.updateResult(e));
@@ -335,3 +334,9 @@ export const getIndex = new Parser((s) =>
     index: s.index,
   })
 );
+
+export const addIndex = (n: number) =>
+  new Parser((s) => (s.isError ? s : s.updateByteIndex(n)));
+
+export const addByteIndex = (n: number) =>
+  new Parser((s) => (s.isError ? s : s.updateBitIndex(n)));
