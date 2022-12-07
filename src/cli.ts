@@ -5,8 +5,8 @@ import { many } from "./parser";
 function cli() {
   if (process.argv.length < 4) {
     console.log(
-      "You must indicate the trace file as `node cli.ts a/f <input file> <output file>`.",
-      "The output file is optionnal. a is for analyse, f is for FLECHE"
+      "Please indicate the trace file as `node cli.js a/f <input file> <output file>`.",
+      "\nThe output file is optionnal. a is for analyse, f is for FLECHE"
     );
     exit(1);
   }
