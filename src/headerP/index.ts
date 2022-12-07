@@ -1,8 +1,8 @@
 import {
   Bit,
   everythingUntil,
-  many1,
   RawString,
+  readUntilI,
   sequence,
   succeed,
   Uint,
@@ -89,3 +89,32 @@ export const http_parser = everythingUntil(RawString("\x0D\x0A\x0D\x0A")).map(
       .join("")
       .split("\r\n")
 );
+
+export const header_parser = ethernet_parser
+  .chain((x) => {
+    if (x && x[2] === 0x800)
+      return ip4_parser.map((res) => (res ? [x, res] : x));
+    return succeed(x);
+  })
+  .chain((x) => {
+    if (x && x[1]) {
+      let ip_result = x[1] as number[];
+      if (ip_result[9] === 0x6)
+        return tcp_parser.map((res) => (res ? [...x, res] : x));
+    }
+    return succeed(x);
+  })
+  .chain((x) => {
+    if (x && x[2]) {
+      let tcp_result = x[2] as number[];
+      if (tcp_result[1] == 80)
+        return http_parser.map((res) => (res ? [...x, res] : x));
+    }
+    return succeed(x);
+  })
+  .chain((x) => {
+    if (!x || !x[1]) return succeed(x);
+
+    let ip_result = x[1] as number[];
+    return readUntilI(ip_result[4]).map((res) => (res ? [...x, res] : x));
+  });

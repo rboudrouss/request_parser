@@ -1,19 +1,13 @@
 import {
-  ethernet_parser,
-  http_parser,
-  ip4_parser,
+  header_parser,
   readBinF,
   readF,
-  tcp_parser,
 } from "./headerP";
-import { sequence, tup } from "./parser";
+import { many, sequence, tup } from "./parser";
 
-let parser = sequence(
-  tup(ethernet_parser, ip4_parser, tcp_parser, http_parser)
-);
+let data = readBinF("data/http-chunked-gzip.pcap");
 
-let data = readF("data/example1.txtcap");
-
-let result = parser.run(data);
+// TODO, make an offset in parserState for readUntilI works for others, or use correctly the data field ?
+let result = many(header_parser).run(data);
 
 console.log(result.result, result.bitIndex, result.error);

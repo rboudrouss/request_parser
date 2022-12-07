@@ -93,3 +93,65 @@ export const RawString = (s: string) => {
     });
   return sequence(byteParsers).map((res) => res?.join(""));
 };
+
+export const readUntilByte = new Parser<number>((s) => {
+  if (s.isError) return s;
+
+  if (s.index >= s.dataView.byteLength)
+    return s.updateError(`readUntilByte: Unexpected end of input`);
+
+  let mask = 1;
+  let nb = 7 - s.bitOffset;
+
+  for (let i = 0; i < nb; i++) mask = (mask << 1) + 1;
+
+  const byte = s.dataView.getUint8(s.index);
+
+  const result = byte & nb;
+  return s.updateBitIndex(nb).updateResult(result);
+});
+
+export const readUntilMod32 = readUntilByte.chain(
+  (x) =>
+    new Parser((s) => {
+      if (s.isError) return s;
+
+      let nb = 4 - (s.index % 4);
+
+      if (nb === 0) return s;
+
+      if (s.index + nb >= s.dataView.byteLength)
+        return s.updateError("ReadUntilMod32: Unexpeted end of input");
+
+      let result: number[] = [];
+
+      for (let i = 0; i < nb; i++)
+        result.push(s.dataView.getUint8(s.index + i));
+
+      return s.updateByteIndex(nb).updateResult(x ? [x, ...result] : result);
+    })
+);
+
+export const readUntilI = (byteIndex: number) =>
+  readUntilByte.chain(
+    (x) =>
+      new Parser((s) => {
+        if (s.isError) return s;
+
+        let nb = byteIndex - s.index;
+
+        if (nb < 0)
+          console.log("Warning in readUntilI index is > that given index");
+        if (nb <= 0) return s;
+
+        if (byteIndex > s.dataView.byteLength)
+          return s.updateError("ReadUntilI: Unexpeted end of input");
+
+        let result: number[] = [];
+
+        for (let i = 0; i < nb; i++)
+          result.push(s.dataView.getUint8(s.index + i));
+
+        return s.updateByteIndex(nb).updateResult(x ? [x, ...result] : result);
+      })
+  );
