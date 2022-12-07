@@ -21,46 +21,6 @@ export * from "./ethernetP";
 export * from "./httpP";
 export * from "./tcpP";
 
-// TODO find a way to not excecute tcp if ip failed but stil executing the rest
-// export const header_parser = ethernet_parser
-//   .chain((x) => {
-//     if (x && x[2].value === 0x800)
-//       return ip4_parser.map((res) => (res ? [x, res] : x));
-//     return succeed(x);
-//   })
-//   .chain((x) => {
-//     if (x && x[1]) {
-//       let ip_result = x[1] as any[]; // HACK
-//       if (ip_result[9].value === 0x6)
-//         return tcp_parser.map((res) => (res ? [...x, res] : x));
-//     }
-//     return succeed(x);
-//   })
-//   .chain((x) => {
-//     if (x && x[2]) {
-//       let tcp_result = x[2] as any[]; // HACK
-//       if (tcp_result[1].value == 80)
-//         return http_parser.map((res) => (res ? [...x, res] : x));
-//     }
-//     return succeed(x);
-//   })
-//   .chain((x) =>
-//     x
-//       ? Uint(32)
-//           .map(tag("CRC checksum"))
-//           .map((res) => (res ? [...x, res] : x))
-//       : succeed(x)
-//   )
-//   .chain((x) => {
-//     // Unsuported Data
-//     if (!x || !x[1]) return succeed(x);
-
-//     let ip_result = x[1] as any[];
-//     return readUntilI(ip_result[4].value + 14) // HACK hard typed ethernet header size
-//       .map(tag("Unsuported Data"))
-//       .map((res) => (res ? [...x, res] : x));
-//   });
-
 // TODO make this code cleaner / find a better way
 const header_parser = coroutine((run) => {
   let ethernet_frame = run(ethernet_parser);

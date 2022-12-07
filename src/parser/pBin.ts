@@ -94,7 +94,7 @@ export const RawString = (s: string) => {
   return sequence(byteParsers).map((res) => res?.join(""));
 };
 
-export const readUntilByte = new Parser<number|null>((s) => {
+export const readUntilByte = new Parser<number | null>((s) => {
   if (s.isError) return s;
 
   if (s.bitIndex % 8 == 0) return s.updateResult(null);
