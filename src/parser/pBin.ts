@@ -141,7 +141,9 @@ export const readUntilI = (byteIndex: number) =>
         let nb = byteIndex - s.index;
 
         if (nb < 0)
-          console.log("Warning in readUntilI index is > that given index");
+          console.log(
+            `Warning in readUntilI PS index (${s.index}) is > that given index (${byteIndex})`
+          );
         if (nb <= 0) return s;
 
         if (byteIndex > s.dataView.byteLength)

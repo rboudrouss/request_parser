@@ -35,10 +35,24 @@ export const readF = (s: string): Uint8Array => {
 // HACK on passe par un string pour être sur qu'on l'interpréte comme on veut
 // HACK le .slice(39) c'est parce que wireshark ignore les 39 premiers bytes pour je ne sais quelle raison
 export const readBinF = (s: string): Uint8Array => {
-  return convertToBin(readFileSync(s).toString("hex").slice(39 * 2 + 2));
+  return convertToBin(
+    readFileSync(s)
+      .toString("hex")
+      .slice(39 * 2 + 2)
+  );
 };
 
 export const writeBinF = (data: Uint8Array, s: string): void => {
   let dataView = new DataView(data.buffer);
   writeFileSync(s, dataView, "binary");
 };
+
+export const tag =
+  <T>(name: string, descFN?: (x: T) => string) =>
+  (value: T) => {
+    return {
+      name,
+      value,
+      description: descFN ? descFN(value) : null,
+    };
+  };
