@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { readFileSync, writeFileSync } from "fs";
 import {
   header_type,
@@ -40,6 +41,8 @@ export interface taged_value<T> {
   value: T;
   description: string | null;
 }
+=======
+>>>>>>> 6858648 (get reacted)
 
 // HACK repeated regex, found in parser/ too
 const reHexDigits = /^[0-9a-fA-F]+/;
@@ -215,6 +218,7 @@ export const cleanInput = (data: string): string => {
     .replace(/\s/g, "");
 };
 
+<<<<<<< HEAD
 // Use it only if executed by <ts->node <!>
 export const readF = (s: string): Uint8Array => {
   return convertToBin(cleanInput(readFileSync(s).toString()));
@@ -229,6 +233,8 @@ export const writeF = (data: string, s: string): void => {
   writeFileSync(s, data);
 };
 
+=======
+>>>>>>> 6858648 (get reacted)
 export const tag =
   <T>(name: string, descFN?: (x: T) => string) =>
   (value: T): taged_value<T> => {
