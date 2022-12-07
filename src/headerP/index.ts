@@ -9,11 +9,12 @@ import {
   sequence,
   peekInt,
   peekUInts,
+  possibly,
 } from "../parser";
 import { tag } from "./utils";
 
 import ethernet_parser from "./ethernetP";
-import http_parser from "./httpP";
+import http_parser, { http_formater } from "./httpP";
 import ip4_parser from "./ipP";
 import tcp_parser from "./tcpP";
 
@@ -68,26 +69,28 @@ export const header_parser2 = coroutine((run) => {
   let ethernet_frame = run(ethernet_parser);
   let ip_frame = null;
   let tcp_frame = null;
-  let http_frame = null;
+  let is_http = false;
   let unknown_data = null;
   let peek = null;
 
   const { index, bitIndex } = run(getIndex);
 
-  if (ethernet_frame[3].value !== 0x800)
+  if (ethernet_frame[2].value !== 0x800)
     return [
       ethernet_frame,
       run(
-        peekUInts(16)
-          .map((x) => x.map((e) => e.toString(16)))
-          .map(tag("Peek next bytes", () => "For debug only"))
+        possibly(
+          peekUInts(16)
+            .map((x) => x.map((e) => e.toString(16)))
+            .map(tag("Peek next bytes", () => "For debug only"))
+        )
       ),
     ];
 
   ip_frame = run(ip4_parser);
   if (ip_frame[9].value === 0x6) {
     tcp_frame = run(tcp_parser);
-    if (tcp_frame[1].value === 80) http_frame = run(http_parser);
+    is_http = tcp_frame[0].value === 80 || tcp_frame[1].value === 80;
   }
 
   let size = ip_frame[4].value as number;
@@ -98,18 +101,19 @@ export const header_parser2 = coroutine((run) => {
   );
 
   peek = run(
-    peekUInts(16)
-      .map((x) => x.map((e) => e.toString(16)))
-      .map(tag("Peek next bytes", () => "For debug only"))
+    possibly(
+      peekUInts(16)
+        .map((x) => x.map((e) => e.toString(16)))
+        .map(tag("Peek next bytes", () => "For debug only"))
+    )
   );
 
-  if (http_frame)
+  if (is_http)
     return [
       ethernet_frame,
       ip_frame,
       tcp_frame,
-      http_frame,
-      unknown_data,
+      unknown_data.value ? http_formater(unknown_data.value) : unknown_data,
       peek,
     ];
   if (tcp_frame)

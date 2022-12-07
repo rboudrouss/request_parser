@@ -7,11 +7,12 @@ import {
 } from "./headerP";
 import { many, many1, sequence, tup } from "./parser";
 
-let data = readBinF("data/http-chunked-gzip.pcap");
+let data = readF("data/txt/http2.txtcap");
 
-// TODO, make an offset in parserState for readUntilI works for others, or use correctly the data field ?
+console.log(data)
+
 let result = many(header_parser2).run(data);
 
 console.log(result.result);
 
-writeF(JSON.stringify(result.result), "data/temp/example.json")
+writeF(JSON.stringify(result.result), "data/temp/exampletxt.json")
