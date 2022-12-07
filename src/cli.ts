@@ -78,7 +78,7 @@ function cli() {
         if (tcp_flags[i]) act_flags.push(tcp_flagsM[i]);
 
       let source_port = tcp_layer[0].value.toString().padStart(6);
-      let dest_port = tcp_layer[0].value.toString().padStart(6);
+      let dest_port = tcp_layer[1].value.toString().padStart(6);
 
       return `${ip4_frame[11].description.padStart(
         15
