@@ -77,7 +77,11 @@ export const header_parser2 = coroutine((run) => {
   if (ethernet_frame[3].value !== 0x800)
     return [
       ethernet_frame,
-      run(peekUInts(16).map((x) => x.map((e) => e.toString(16)))),
+      run(
+        peekUInts(16)
+          .map((x) => x.map((e) => e.toString(16)))
+          .map(tag("Peek next bytes", () => "For debug only"))
+      ),
     ];
 
   ip_frame = run(ip4_parser);
@@ -93,7 +97,11 @@ export const header_parser2 = coroutine((run) => {
       .map(tag("Unsuported data"))
   );
 
-  peek = run(peekUInts(16).map((x) => x.map((e) => e.toString(16))));
+  peek = run(
+    peekUInts(16)
+      .map((x) => x.map((e) => e.toString(16)))
+      .map(tag("Peek next bytes", () => "For debug only"))
+  );
 
   if (http_frame)
     return [
