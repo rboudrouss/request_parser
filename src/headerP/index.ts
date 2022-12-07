@@ -6,11 +6,12 @@ import {
   getIndex,
   peekUInts,
   possibly,
+  fail,
 } from "../parser";
 import { tag } from "./utils";
 
 import ethernet_parser from "./ethernetP";
-import http_parser, { http_formater } from "./httpP";
+import http_formater from "./httpP";
 import ip4_parser from "./ipP";
 import tcp_parser from "./tcpP";
 
@@ -21,47 +22,47 @@ export * from "./httpP";
 export * from "./tcpP";
 
 // TODO find a way to not excecute tcp if ip failed but stil executing the rest
-export const header_parser = ethernet_parser
-  .chain((x) => {
-    if (x && x[2].value === 0x800)
-      return ip4_parser.map((res) => (res ? [x, res] : x));
-    return succeed(x);
-  })
-  .chain((x) => {
-    if (x && x[1]) {
-      let ip_result = x[1] as any[]; // HACK
-      if (ip_result[9].value === 0x6)
-        return tcp_parser.map((res) => (res ? [...x, res] : x));
-    }
-    return succeed(x);
-  })
-  .chain((x) => {
-    if (x && x[2]) {
-      let tcp_result = x[2] as any[]; // HACK
-      if (tcp_result[1].value == 80)
-        return http_parser.map((res) => (res ? [...x, res] : x));
-    }
-    return succeed(x);
-  })
-  .chain((x) =>
-    x
-      ? Uint(32)
-          .map(tag("CRC checksum"))
-          .map((res) => (res ? [...x, res] : x))
-      : succeed(x)
-  )
-  .chain((x) => {
-    // Unsuported Data
-    if (!x || !x[1]) return succeed(x);
+// export const header_parser = ethernet_parser
+//   .chain((x) => {
+//     if (x && x[2].value === 0x800)
+//       return ip4_parser.map((res) => (res ? [x, res] : x));
+//     return succeed(x);
+//   })
+//   .chain((x) => {
+//     if (x && x[1]) {
+//       let ip_result = x[1] as any[]; // HACK
+//       if (ip_result[9].value === 0x6)
+//         return tcp_parser.map((res) => (res ? [...x, res] : x));
+//     }
+//     return succeed(x);
+//   })
+//   .chain((x) => {
+//     if (x && x[2]) {
+//       let tcp_result = x[2] as any[]; // HACK
+//       if (tcp_result[1].value == 80)
+//         return http_parser.map((res) => (res ? [...x, res] : x));
+//     }
+//     return succeed(x);
+//   })
+//   .chain((x) =>
+//     x
+//       ? Uint(32)
+//           .map(tag("CRC checksum"))
+//           .map((res) => (res ? [...x, res] : x))
+//       : succeed(x)
+//   )
+//   .chain((x) => {
+//     // Unsuported Data
+//     if (!x || !x[1]) return succeed(x);
 
-    let ip_result = x[1] as any[];
-    return readUntilI(ip_result[4].value + 14) // HACK hard typed ethernet header size
-      .map(tag("Unsuported Data"))
-      .map((res) => (res ? [...x, res] : x));
-  });
+//     let ip_result = x[1] as any[];
+//     return readUntilI(ip_result[4].value + 14) // HACK hard typed ethernet header size
+//       .map(tag("Unsuported Data"))
+//       .map((res) => (res ? [...x, res] : x));
+//   });
 
 // TODO make this code cleaner / find a better way
-export const header_parser2 = coroutine((run) => {
+const header_parser = coroutine((run) => {
   let ethernet_frame = run(ethernet_parser);
   let ip_frame = null;
   let tcp_frame = null;
@@ -71,17 +72,10 @@ export const header_parser2 = coroutine((run) => {
 
   const { index, bitIndex } = run(getIndex);
 
-  if (ethernet_frame[2].value !== 0x800)
-    return [
-      ethernet_frame,
-      run(
-        possibly(
-          peekUInts(16)
-            .map((x) => x.map((e) => e.toString(16)))
-            .map(tag("Peek next bytes", () => "For debug only"))
-        )
-      ),
-    ];
+  if (ethernet_frame[2].value !== 0x800) {
+    console.log("Error, not ipv4. Cannot continue");
+    run(fail("header_parser: Not ipv4, cannot continue"));
+  }
 
   ip_frame = run(ip4_parser);
   if (ip_frame[9].value === 0x6) {
@@ -112,7 +106,7 @@ export const header_parser2 = coroutine((run) => {
       unknown_data.value ? http_formater(unknown_data.value) : unknown_data,
       peek,
     ];
-  if (tcp_frame)
-    return [ethernet_frame, ip_frame, tcp_frame, unknown_data, peek];
-  return [ethernet_frame, ip_frame, unknown_data, peek];
+  return [ethernet_frame, ip_frame, tcp_frame, unknown_data, peek];
 });
+
+export default header_parser;

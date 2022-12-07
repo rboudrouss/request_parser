@@ -1,19 +1,19 @@
 import { addIndex, everythingUntil, RawString } from "../parser";
 
 // not used anymore
-const http_parser = everythingUntil(RawString("\x0D\x0A\x0D\x0A"))
-  .map((x) =>
-    x
-      .map((e) => String.fromCharCode(e))
-      .join("")
-      .split("\r\n")
-  )
-  .chain((x) => addIndex(4).map(() => x));
+// // const http_parser = everythingUntil(RawString("\x0D\x0A\x0D\x0A"))
+// //   .map((x) =>
+// //     x
+// //       .map((e) => String.fromCharCode(e))
+// //       .join("")
+// //       .split("\r\n")
+// //   )
+// //   .chain((x) => addIndex(4).map(() => x));
 
-export default http_parser;
+// export default http_parser;
 
 // TODO make it detected better
-export const http_formater = (data: string) =>
+const http_formater = (data: string) =>
   data
     .split("")
     .reduce((acc: string[][], _, i, arr) => {
@@ -24,3 +24,5 @@ export const http_formater = (data: string) =>
     .map((n) => String.fromCharCode(n))
     .join("")
     .split("\r\n");
+
+export default http_formater;
