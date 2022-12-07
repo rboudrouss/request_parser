@@ -1,13 +1,9 @@
 import {
   readUntilI,
   succeed,
-  Zero,
-  fail,
   Uint,
   coroutine,
   getIndex,
-  sequence,
-  peekInt,
   peekUInts,
   possibly,
 } from "../parser";
