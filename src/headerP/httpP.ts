@@ -1,6 +1,6 @@
 import { addIndex, everythingUntil, RawString } from "../parser";
 
-// TODO make it detected better
+// FIXME make it detected better
 const http_formater = (data: string) =>
   data
     .split("")

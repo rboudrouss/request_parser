@@ -2,6 +2,7 @@ import { exit } from "process";
 import header_parser, { readF, writeF } from "./headerP";
 import { many } from "./parser";
 
+// TODO maybe make relative ack & seq numbers ?
 function cli() {
   if (process.argv.length < 4) {
     console.log(
