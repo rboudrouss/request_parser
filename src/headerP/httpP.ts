@@ -1,5 +1,3 @@
-import { addIndex, everythingUntil, RawString } from "../parser";
-
 // FIXME make it detected better
 const http_formater = (data: string) => {
   if (!data) return data;

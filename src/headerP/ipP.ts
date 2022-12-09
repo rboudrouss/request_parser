@@ -5,9 +5,7 @@ import {
   Uint,
   Zero,
   tup,
-  getIndex,
   addIndex,
-  coroutine,
 } from "../parser";
 import { IP4_parser, IP6_parser, MAC_parser } from "./basicP";
 import { tag } from "./utils";

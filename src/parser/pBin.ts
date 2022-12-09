@@ -1,6 +1,6 @@
 import Parser from "./parser";
 import { sequence } from "./pComb";
-import { fail, peekInt, succeed } from "./pGen";
+import { fail, succeed } from "./pGen";
 
 export const Bit = new Parser<number, unknown>((s) => {
   if (s.isError) return s;

@@ -1,6 +1,6 @@
 import { exit } from "process";
 import header_parser, { filter, readF, tcp_flagsM, writeF } from "./headerP";
-import { anyChar, many } from "./parser";
+import { many } from "./parser";
 
 // TODO maybe make relative ack & seq numbers ?
 function cli() {

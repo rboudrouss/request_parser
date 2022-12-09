@@ -1,7 +1,6 @@
 import {
   readUntilI,
   succeed,
-  Uint,
   coroutine,
   getIndex,
   peekUInts,
