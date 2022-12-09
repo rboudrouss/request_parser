@@ -1,13 +1,43 @@
 import { exit } from "process";
 import header_parser, { readF, writeF } from "./headerP";
-import { many } from "./parser";
+import { anyChar, many } from "./parser";
+
+function filter(o: string[][], data: any): any {
+  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http"];
+  let arg_parm: { [key: string]: (x: any, e: string) => boolean } = {
+    source_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[0] === e,
+    dest_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[1] === e,
+    ip: (x: any, e: string) =>
+      arg_parm.source_ip(x, e) || arg_parm.dest_ip(x, e),
+    source_mac: (x: any, e: string) => x[0].layers[1] && x[0].mac[0] === e,
+    dest_mac: (x: any, e: string) => x[0].layers[1] && x[0].mac[1] === e,
+    mac: (x: any, e: string) =>
+      arg_parm.dest_mac(x, e) || arg_parm.source_mac(x, e),
+    source_port: (x: any, e: string) => x[0].layers[2] && x[0].port[0] === e,
+    dest_port: (x: any, e: string) => x[0].layers[2] && x[0].port[1] === e,
+    port: (x: any, e: string) =>
+      arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
+  };
+
+  for (const e of o)
+    for (let i = 0; i < data.length; )
+      if (cond_parm.includes(e[0]) && !data[i][0].layers.includes(e[0])) {
+        data.splice(i, 1);
+      } else if (e[0] in arg_parm && !arg_parm[e[0]](data[i], e[1]))
+        data.splice(i, 1);
+      else {
+        i++;
+      }
+
+  return data;
+}
 
 // TODO maybe make relative ack & seq numbers ?
 function cli() {
   if (process.argv.length < 4) {
     console.log(
-      "Please indicate the trace file as `node cli.js <a/f> <input file> <output file>`.",
-      "\nThe output file is optional. a is for analyse, f is for FLECHE"
+      "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>]`.",
+      "\na is for analyse, f is for FLECHE"
     );
     exit(1);
   }
@@ -16,45 +46,66 @@ function cli() {
   let result = many(header_parser).run(data);
   if (result.isError) throw new Error(result.error as string);
 
+  let parsed = result.result;
+
+  let filobj: (string | string[])[] = process.argv
+    .slice(4)
+    .map((e) => e.toLowerCase().split("="));
+  if (filobj[0][0] !== "-f") console.log("unknown parameter", filobj[0]);
+  else parsed = filter(filobj.slice(1) as string[][], parsed);
+
   if (process.argv[2].toUpperCase().startsWith("A")) {
-    if (process.argv.length >= 5)
-      writeF(JSON.stringify(result.result, null, 2), process.argv[4]);
-    else console.log(JSON.stringify(result.result, null, 2));
-    return;
+    console.log(JSON.stringify(parsed, null, 2));
   }
 
-  let parsed = result.result;
   let msg = parsed
     .map((l) => {
-      if (!l || !l[0]) return "no data parsed";
+      if (!l || !l[0] || !l[1]) return "no data parsed";
+
+      let filter_info = l[0];
 
       let ethernet_frame: {
         name: string;
         value: number | number[];
         description: string;
-      }[] = l[0] as any;
+      }[] = l[1] as any;
 
-      if (!l[1])
-        return `${ethernet_frame[1].description} ---> ${ethernet_frame[0].description} : Insuported Internet layer (not ipv4)`;
+      let source_mac = ethernet_frame[1].description;
+      let dest_mac = ethernet_frame[0].description;
 
-      let ip4_frame: {
+      if (!l[2])
+        return `${source_mac} ---> ${dest_mac} : Insuported Internet layer (not ipv4)`;
+
+      let ip_frame: {
         name: string;
         value: number | number[];
         description: string;
-      }[] = l[1] as any;
+      }[] = l[2] as any;
 
-      if (!l[2])
-        return `${ip4_frame[11].description.padStart(
-          15
-        )} --> ${ip4_frame[12].description.padStart(
-          15
-        )} : Unsuported Transport layer (not tcp)`;
+      let ip_source: string = "";
+      let ip_dest: string = "";
+
+      if (filter_info.layers[1] === "ipv4") {
+        ip_source = ip_frame[11].description.padStart(15);
+        ip_dest = ip_frame[12].description.padStart(15);
+      } else if (filter_info.layers[1] == "ipv6") {
+        ip_source = ip_frame[7].description.padStart(15);
+        ip_dest = ip_frame[8].description.padStart(15);
+      } else if (filter_info.layers[1] === "arp") {
+        let sourceh = ip_frame[5].description.padStart(15);
+        let sourcep = ip_frame[6].description.padStart(15);
+        let destp = ip_frame[8].description.padStart(15);
+        return `${sourcep} -->    BROADCAST    : who has ${destp}? tell ${sourceh}`;
+      }
+
+      if (!l[3])
+        return `${ip_source} --> ${ip_dest} : Unsuported Transport layer (not tcp)`;
 
       let tcp_layer: {
         name: string;
         value: number | number[];
         description: string;
-      }[] = l[2] as any;
+      }[] = l[3] as any;
 
       let tcp_flags: {
         name: string;
@@ -81,9 +132,9 @@ function cli() {
       let source_port = tcp_layer[0].value.toString().padStart(6);
       let dest_port = tcp_layer[1].value.toString().padStart(6);
 
-      return `${ip4_frame[11].description.padStart(
+      return `${ip_frame[11].description.padStart(
         15
-      )} --> ${ip4_frame[12].description.padStart(
+      )} --> ${ip_frame[12].description.padStart(
         15
       )} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
         ", "
@@ -91,8 +142,7 @@ function cli() {
     })
     .join("\n");
 
-  if (process.argv.length >= 5) writeF(msg, process.argv[4]);
-  else console.log(msg);
+  console.log(msg);
   return;
 }
 
