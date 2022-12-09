@@ -3,7 +3,7 @@ import header_parser, { filter, readF, tcp_flagsM, writeF } from "./headerP";
 import { many } from "./parser";
 
 // TODO maybe make relative ack & seq numbers ?
-function cli() {
+export default function cli() {
   if (process.argv.length < 4) {
     console.log(
       "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>] [-o <output file>]`.",
