@@ -1,5 +1,5 @@
 import { exit } from "process";
-import header_parser, { filter, readF, writeF } from "./headerP";
+import header_parser, { filter, readF, tcp_flagsM, writeF } from "./headerP";
 import { anyChar, many } from "./parser";
 
 // TODO maybe make relative ack & seq numbers ?
@@ -103,18 +103,6 @@ function cli() {
         description: string;
       }[] = (tcp_layer[6].value as any).map((e: any) => e.value);
 
-      let tcp_flagsM = [
-        "NS",
-        "CWR",
-        "ECE",
-        "URG",
-        "ACK",
-        "PSH",
-        "RST",
-        "SYN",
-        "FIN",
-      ];
-
       let act_flags: string[] = [];
       for (let i = 0; i < tcp_flagsM.length; i++)
         if (tcp_flags[i]) act_flags.push(tcp_flagsM[i]);
@@ -122,11 +110,7 @@ function cli() {
       let source_port = tcp_layer[0].value.toString().padStart(6);
       let dest_port = tcp_layer[1].value.toString().padStart(6);
 
-      return `${ip_frame[11].description.padStart(
-        15
-      )} --> ${ip_frame[12].description.padStart(
-        15
-      )} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
+      return `${ip_source} --> ${ip_dest} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
         ", "
       )} ] Seq=${tcp_layer[2].value} Ack=${tcp_layer[3].value}`;
     })

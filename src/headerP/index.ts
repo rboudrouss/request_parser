@@ -8,7 +8,7 @@ import {
   possibly,
   fail,
 } from "../parser";
-import { tag } from "./utils";
+import { tag, tcp_flagsM } from "./utils";
 
 import ethernet_parser from "./ethernetP";
 import http_formater from "./httpP";
@@ -86,6 +86,11 @@ const header_parser = coroutine((run) => {
     is_http = tcp_frame[0].value === 80 || tcp_frame[1].value === 80;
     filter_info["port"] = [tcp_frame[0].value.toString(), tcp_frame[1].value.toString()];
     filter_info.layers[2] = "tcp";
+
+    let tcp_flags = (tcp_frame[6].value as any[]).map(e => e.value) as number[]
+    for (let i = 0; i<tcp_flagsM.length; i++)
+      if(tcp_flags[i] === 1)
+        filter_info[tcp_flagsM[i].toLowerCase()] = true
   }
 
   unknown_data = run(

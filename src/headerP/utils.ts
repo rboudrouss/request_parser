@@ -3,7 +3,6 @@ import { readFileSync, writeFileSync } from "fs";
 // HACK
 const reHexDigits = /^[0-9a-fA-F]+/;
 
-
 export function filter(o: string[][], data: any): any {
   let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http"];
   let arg_parm: { [key: string]: (x: any, e: string) => boolean } = {
@@ -25,15 +24,16 @@ export function filter(o: string[][], data: any): any {
     for (let i = 0; i < data.length; )
       if (cond_parm.includes(e[0]) && !data[i][0].layers.includes(e[0])) {
         data.splice(i, 1);
-      } else if (e[0] in arg_parm && !arg_parm[e[0]](data[i], e[1]))
+      } else if (e[0] in arg_parm && !arg_parm[e[0]](data[i], e[1])){
         data.splice(i, 1);
-      else {
+      } else if (tcp_flagsM.map(e => e.toLowerCase()).includes(e[0]) && !(e[0] in data[i][0])){
+        data.splice(i, 1);
+      } else {
         i++;
       }
 
   return data;
 }
-
 
 export const convertToBin = (data: string): Uint8Array => {
   if (!reHexDigits.test(data))
@@ -82,3 +82,15 @@ export const tag =
       description: descFN ? descFN(value) : null,
     };
   };
+
+export const tcp_flagsM = [
+  "NS",
+  "CWR",
+  "ECE",
+  "URG",
+  "ACK",
+  "PSH",
+  "RST",
+  "SYN",
+  "FIN",
+];
