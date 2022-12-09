@@ -3,10 +3,7 @@ import { tag } from "./utils";
 
 const macToStr = (mac: number[]) => {
   const hexMac = mac.map((dec) => dec.toString(16));
-  const vendor = hexMac.join(":");
-  return (
-    vendor + "_" + hexMac.slice(3, 6).join(":") + " (" + hexMac.join(":") + ")"
-  );
+  return hexMac.join("-")
 };
 
 export const MAC_parser = (name: string) =>

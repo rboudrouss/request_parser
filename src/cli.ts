@@ -1,7 +1,6 @@
 import { exit } from "process";
 import header_parser, { readF, writeF } from "./headerP";
 import { anyChar, many } from "./parser";
-import Parser from "./parser/parser";
 
 function filter(o: string[][], data: any): any {
   let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http"];
@@ -38,7 +37,7 @@ function cli() {
   if (process.argv.length < 4) {
     console.log(
       "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>] [-o <output file>]`.",
-      "\na is for analyse, f is for FLECHE"
+      "\na is for analyse, f is for FLECHE, read README for more info"
     );
     exit(1);
   }
