@@ -51,6 +51,10 @@ Les options de filtres que vous avez sont :
 
 - `index=<n°> :` : sélectionne la (`<n°>`-1)ème requête par trie chronologique. (utile pour voir une requête en particulier en analyse)
 
+- `max_index=<n°> :` : sélectionne les requêtes avec un index inférieur à `<n°>` (`<n°>` inclus)
+
+- `min_index=<n°> :` : sélectionne les requêtes avec un index supérieur à `<n°>` (`<n°>` inclus)
+
 - `source_ip=<ip>` sélectionne seulement les requêtes émis par l'ip `<ip>`
 
 - `dest_ip=<ip>` sélectionne seulement les paquets destinés à l'ip `<ip>`

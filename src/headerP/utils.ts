@@ -19,6 +19,8 @@ export function filter(o: string[][], data: any): any {
     port: (x: any, e: string) =>
       arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
     index: (x: any, e: string) => x[0].index == e,
+    max_index: (x: any, e:string) => x[0].index <= e,
+    min_index:(x:any, e:string) => x[0].index >= e
   };
 
   for (const e of o)
