@@ -2,6 +2,8 @@ TODO add a release flag with projet already built
 
 TODO make a more readable way than json
 
+TODO test icmp & ipv6 x')
+
 ## Input
 
 must take in input a hex dup + offset and interpretation of the packets. (see `src/data/txt/` for examples)
