@@ -3,6 +3,38 @@ import { readFileSync, writeFileSync } from "fs";
 // HACK
 const reHexDigits = /^[0-9a-fA-F]+/;
 
+
+export function filter(o: string[][], data: any): any {
+  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http"];
+  let arg_parm: { [key: string]: (x: any, e: string) => boolean } = {
+    source_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[0] === e,
+    dest_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[1] === e,
+    ip: (x: any, e: string) =>
+      arg_parm.source_ip(x, e) || arg_parm.dest_ip(x, e),
+    source_mac: (x: any, e: string) => x[0].layers[1] && x[0].mac[0] === e,
+    dest_mac: (x: any, e: string) => x[0].layers[1] && x[0].mac[1] === e,
+    mac: (x: any, e: string) =>
+      arg_parm.dest_mac(x, e) || arg_parm.source_mac(x, e),
+    source_port: (x: any, e: string) => x[0].layers[2] && x[0].port[0] === e,
+    dest_port: (x: any, e: string) => x[0].layers[2] && x[0].port[1] === e,
+    port: (x: any, e: string) =>
+      arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
+  };
+
+  for (const e of o)
+    for (let i = 0; i < data.length; )
+      if (cond_parm.includes(e[0]) && !data[i][0].layers.includes(e[0])) {
+        data.splice(i, 1);
+      } else if (e[0] in arg_parm && !arg_parm[e[0]](data[i], e[1]))
+        data.splice(i, 1);
+      else {
+        i++;
+      }
+
+  return data;
+}
+
+
 export const convertToBin = (data: string): Uint8Array => {
   if (!reHexDigits.test(data))
     throw new Error("convertToBin: got data that is not hexadecimal");
