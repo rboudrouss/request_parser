@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf build/ && tsc -b --verbose && cp README.md build && cp -r src/data build/data",
+    "build": "rm -rf build/ && tsc -b --verbose && cp README.md build && mkdir -p build/data && cp -r src/data/txt build/data",
     "wild": "tsc -b --watch",
     "test": "mocha -r ts-node/register test/**/*.test.ts",
     "west": "mocha -r ts-node/register test/**/*.test.ts -w"

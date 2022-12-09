@@ -1,0 +1,21 @@
+_Nous avons fait le choix de n'utiliser aucune dépendance pour le projet hormis les dépendances nécessaires, tel que l'interpréteur et le typages._
+
+Pour excecuter notre code vous avez 2 choix :
+
+
+Mais dans les 2 cas, on aura besoin de l'interpréteur javacript `node.js` à installer ici:  https://nodejs.org/en/ (ou avec pour packet manager)
+
+
+### Méthode facile
+
+Récupérer la dernière version dans l'onglet release sur github (Pour le correcteur c'est déjà forni dans le dossier `build/`).
+
+Et excecuter avec la commande suivante `node cli.js`. Toute les commandes et filtres cité en dessous marchent très bien en remplaçant `<npx> ts-node cli.ts` par `node cli.js`
+
+### interpréter directement le code source
+
+Installer les modules avec `npm i` (pas besoin de fix les vulnérabilités)
+
+ensuite pour executer le code, entrez dans le dossier `/src/` et executer la commande suivantes avec la syntaxe suivante `<npx> ts-node cli.ts <a/f> <input file> [-F <options>] [-o <output file>]`.
+
+`npx` est optionnel mais peut servir dans le cas où `ts-node` n'est pas dans le PATH. l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE. 
