@@ -36,7 +36,7 @@ const header_parser = coroutine((run) => {
   let protocol = -1;
   let filter_info: { [key: string]: any } = {
     mac: [ethernet_frame[1].description, ethernet_frame[0].description],
-    layers: ["ethernet", null, null],
+    layers: ["ethernet", null, null, null],
   };
 
   const { index, bitIndex } = run(getIndex);
@@ -84,8 +84,8 @@ const header_parser = coroutine((run) => {
   if (protocol === 0x6) {
     tcp_frame = run(tcp_parser);
     is_http = tcp_frame[0].value === 80 || tcp_frame[1].value === 80;
-    filter_info["port"] = [tcp_frame[0].value, tcp_frame[1].value];
-    filter_info.layers[2] = "tcp"
+    filter_info["port"] = [tcp_frame[0].value.toString(), tcp_frame[1].value.toString()];
+    filter_info.layers[2] = "tcp";
   }
 
   unknown_data = run(
@@ -104,7 +104,23 @@ const header_parser = coroutine((run) => {
     )
   );
 
-  if (unknown_data.value?.includes("HTTP")) filter_info["http"] = true;
+  is_http &&=
+    unknown_data.value
+      ?.split("")
+      ?.reduce((acc: string[][], _, i, arr) => {
+        if (i % 2 == 0) acc.push(arr.slice(i, i + 2));
+        return acc;
+      }, [])
+      ?.map((s) => Number(`0x${s[0]}${s[1]}`))
+      ?.map((n) => String.fromCharCode(n))
+      ?.join("")
+      ?.includes("HTTP") ?? false;
+
+  // HACK
+  if (is_http) {
+    filter_info["http"] = is_http;
+    filter_info.layers[3] = "http";
+  }
 
   if (is_http)
     return [

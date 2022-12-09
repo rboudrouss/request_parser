@@ -1,6 +1,7 @@
 import { exit } from "process";
 import header_parser, { readF, writeF } from "./headerP";
 import { anyChar, many } from "./parser";
+import Parser from "./parser/parser";
 
 function filter(o: string[][], data: any): any {
   let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http"];
@@ -36,7 +37,7 @@ function filter(o: string[][], data: any): any {
 function cli() {
   if (process.argv.length < 4) {
     console.log(
-      "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>]`.",
+      "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>] [-o <output file>]`.",
       "\na is for analyse, f is for FLECHE"
     );
     exit(1);
@@ -48,14 +49,34 @@ function cli() {
 
   let parsed = result.result;
 
-  let filobj: (string | string[])[] = process.argv
-    .slice(4)
-    .map((e) => e.toLowerCase().split("="));
-  if (filobj[0][0] !== "-f") console.log("unknown parameter", filobj[0]);
-  else parsed = filter(filobj.slice(1) as string[][], parsed);
+  let last_parm_index: number | undefined = undefined;
+  let log_to_file = false;
 
+  if (process.argv.includes("-o")) {
+    last_parm_index = process.argv.indexOf("-o");
+    log_to_file = true;
+  }
+
+  let filobj: (string | string[])[] = process.argv
+    .slice(4, last_parm_index)
+    ?.map((e) => e.toLowerCase().split("="));
+
+  if (typeof filobj !== "undefined" && filobj.length !== 0) {
+    if (filobj[0][0] !== "-f") console.log("unknown parameter", filobj[0]);
+    else parsed = filter(filobj.slice(1) as string[][], parsed);
+  }
   if (process.argv[2].toUpperCase().startsWith("A")) {
-    console.log(JSON.stringify(parsed, null, 2));
+    if (
+      log_to_file &&
+      last_parm_index &&
+      typeof process.argv[last_parm_index + 1] !== "undefined"
+    )
+      writeF(
+        JSON.stringify(parsed, null, 2),
+        process.argv[last_parm_index + 1]
+      );
+    else console.log(JSON.stringify(parsed, null, 2));
+    return;
   }
 
   let msg = parsed
@@ -142,7 +163,13 @@ function cli() {
     })
     .join("\n");
 
-  console.log(msg);
+  if (
+    log_to_file &&
+    last_parm_index &&
+    typeof process.argv[last_parm_index + 1] !== "undefined"
+  )
+    writeF(msg, process.argv[last_parm_index + 1]);
+  else console.log(msg);
   return;
 }
 
