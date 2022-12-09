@@ -69,7 +69,7 @@ Les options de filtres que vous avez sont :
 
 Examples :
 
-- `node cli.js f data/txt/http2.txtcap -F tcp=1 source_ip=145.254.160.237 port=80 -o test.txt`
+- `node cli.js f data/txt/http2.txtcap -F tcp source_ip=145.254.160.237 port=80 -o test.txt`
 
 Cette commande lit le ficher `http2.txtcap` et affiche en mode flèches les requêtes utilisant tcp, avec comme ip source `145.254.160.237`, emis ou à destination du port `80` et l'écris dans le fichier `test.txt`.
 
@@ -89,4 +89,4 @@ Si vous avez une erreur pendant le build c'est que vous avez peut-être pas inst
 
 ## Web app version
 
-Le projet à aussi une version web app pas fini (WIP), vous pouvez regarder le code dans la [branch web_app](https://github.com/rboudrouss/request_parser/tree/webapp)
+Le projet a aussi une version web app pas fini (WIP), vous pouvez regarder le code dans la [branch web_app](https://github.com/rboudrouss/request_parser/tree/webapp)
