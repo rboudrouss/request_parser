@@ -41,10 +41,21 @@ export default function cli() {
       typeof process.argv[last_parm_index + 1] !== "undefined"
     )
       writeF(
-        JSON.stringify(parsed, null, 2),
+        JSON.stringify(
+          parsed.map((e) => e.slice(1)),
+          null,
+          2
+        ),
         process.argv[last_parm_index + 1]
       );
-    else console.log(JSON.stringify(parsed, null, 2));
+    else
+      console.log(
+        JSON.stringify(
+          parsed.map((e) => e.slice(1)),
+          null,
+          2
+        )
+      );
     return;
   }
 
