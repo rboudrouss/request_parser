@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -b --verbose",
+    "build": "rm -rf build/ && tsc -b --verbose && cp README.md build && cp -r src/data build/data",
     "wild": "tsc -b --watch",
     "test": "mocha -r ts-node/register test/**/*.test.ts",
     "west": "mocha -r ts-node/register test/**/*.test.ts -w"
@@ -17,6 +17,5 @@
     "typescript": "^4.9.3",
     "ts-node": "^10.9.1"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

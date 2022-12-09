@@ -29,9 +29,11 @@ Et excecuter avec la commande suivante `node cli.js`. Toute les commandes et fil
 
 Installer les modules avec `npm i` (pas besoin de fix les vulnérabilités)
 
-ensuite pour executer le code, entrez dans le dossier `/src/` et executer la commande suivantes avec la syntaxe suivante `<npx> ts-node cli.ts <a/f> <input file> [-F <options>]`.
+ensuite pour executer le code, entrez dans le dossier `/src/` et executer la commande suivantes avec la syntaxe suivante `<npx> ts-node cli.ts <a/f> <input file> [-F <options>] [-o <output file>]`.
 
-`npx` est optionnel mais peut servir dans le cas où `ts-node` n'est pas dans le PATH. l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE.
+`npx` est optionnel mais peut servir dans le cas où `ts-node` n'est pas dans le PATH. l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE. 
+
+## Les filtres
 
 Les options de filtres que vous avez sont :
 
@@ -67,22 +69,24 @@ Les options de filtres que vous avez sont :
 
 Examples :
 
-- `ts-node cli.ts f data/txt/http2.txtcap -F tcp=1 source_ip=145.254.160.237 port=80 -o test.txt`
+- `node cli.js f data/txt/http2.txtcap -F tcp=1 source_ip=145.254.160.237 port=80 -o test.txt`
 
 Cette commande lit le ficher `http2.txtcap` et affiche en mode flèches les requêtes utilisant tcp, avec comme ip source `145.254.160.237`, emis ou à destination du port `80` et l'écris dans le fichier `test.txt`.
 
-- `ts-node cli.ts a data/txt/http2.txtcap`
+- `node cli.js a data/txt/http2.txtcap -o data/http2.json`
 
-Cette commande lit le fichier `http2.txtcap` et affiche le _json_ qui contient toutes les informations nécessaires de la trame.
+Cette commande lit le fichier `http2.txtcap` et affiche le _json_ qui contient toutes les informations nécessaires de la trame et l'écrit dans le fichier `http2.json`
 
 Il y a des fichiers d'exemple à excecuter dans le dossier `src/data/txt`
 
-### Building (optional)
+## Building (optional)
 
 ts-node transpile sur le moment le code en javascript ce qui peut s'avérer lent surtout sur des petites machines. Il est possible de _build_ le projet en JS pour l'excuter plus rapidement.
 
-Pour se faire dans le root du projet taper `npm build`. ça va transpiler le code, et une fois cela fait il suffit d'excécuter avec node le fichier `build/cli.js`.
+Pour se faire dans le root du projet taper `npm run build`. ça va transpiler le code, et une fois cela fait il suffit d'excécuter avec node le fichier `build/cli.js` sous la forme  `node cli.js`.
 
-#### Web app version
+Si vous avez une erreur pendant le build c'est que vous avez peut-être pas installé les nodes_modules avec `npm i`
 
-Le projet à aussi une version web app (WIP), vous pouvez regarder le code dans la [branch web_app](https://github.com/rboudrouss/request_parser/tree/webapp)
+## Web app version
+
+Le projet à aussi une version web app pas fini (WIP), vous pouvez regarder le code dans la [branch web_app](https://github.com/rboudrouss/request_parser/tree/webapp)
