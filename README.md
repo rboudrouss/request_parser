@@ -1,4 +1,5 @@
 TODO add a release flag with projet already built
+
 TODO make a more readable way than json
 
 ## Input
@@ -12,7 +13,19 @@ and remove the rassembled tcp part of the output
 
 _Nous avons fait le choix de n'utiliser aucune dépendance pour le projet hormis les dépendances nécessaires, tel que l'interpréteur et le typages._
 
-Pour executer le cli, installez `node` https://nodejs.org/en/ (ou avec pour packet manager)
+Pour excecuter notre code vous avez 2 choix :
+
+
+Mais dans les 2 cas, on aura besoin de l'interpréteur javacript `node.js` à installer ici:  https://nodejs.org/en/ (ou avec pour packet manager)
+
+
+### Méthode facile
+
+Récupérer la dernière version dans l'onglet release sur github (Pour le correcteur c'est déjà forni dans le dossier `build/`).
+
+Et excecuter avec la commande suivante `node cli.js`. Toute les commandes et filtres cité en dessous marchent très bien en remplaçant `<npx> ts-node cli.ts` par `node cli.js`
+
+### interpréter directement le code source
 
 Installer les modules avec `npm i` (pas besoin de fix les vulnérabilités)
 
@@ -22,33 +35,35 @@ ensuite pour executer le code, entrez dans le dossier `/src/` et executer la com
 
 Les options de filtres que vous avez sont :
 
-- `arp=1`: sélectionne seulement les requêtes ARP
+- `arp`: sélectionne seulement les requêtes ARP
 
-- `ipv4=1` : sélectionne seulement les requêtes qui utilisent IPV4
+- `ipv4` : sélectionne seulement les requêtes qui utilisent IPV4
 
-- `ipv6=1` : sélectionne seulement les requêtes qui utilisent IPV6
+- `ipv6` : sélectionne seulement les requêtes qui utilisent IPV6
 
-- `tcp=1` : sélectionne seulement les requêtes qui utilisent le protocole TCP
+- `tcp` : sélectionne seulement les requêtes qui utilisent le protocole TCP
 
-- `http=1` : sélectionne seulement les requêtes http
+- `http` : sélectionne seulement les requêtes http
 
 - `source_ip=<ip>` sélectionne seulement les requêtes émis par l'ip `<ip>`
 
-- `dest_ip=<ip>` sélectionne seulement les requêtes destiné à l'ip `<ip>`
+- `dest_ip=<ip>` sélectionne seulement les paquets destinés à l'ip `<ip>`
 
-- `ip=<ip>` sélectionne seulement les requêtes émis ou à destination de l'ip `<ip>`
+- `ip=<ip>` sélectionne seulement les paquets émis ou à destination de l'ip `<ip>`
 
-- `source_mac=<mac>` sélectionne seulement les requêtes émis par l'adresse `<mac>`
+- `source_mac=<mac>` sélectionne seulement les paquets émis par l'adresse `<mac>`
 
-- `dest_mac=<mac>` sélectionne seulement les requêtes destiné à l'adresse `<mac>`
+- `dest_mac=<mac>` sélectionne seulement les paquets destinés à l'adresse `<mac>`
 
-- `mac=<mac>` sélectionne seulement les requêtes émis ou à destination de l'adresse `<mac>`
+- `mac=<mac>` sélectionne seulement les paquets émis ou à destination de l'adresse `<mac>`
 
-- `source_port=<port>` sélectionne seulement les requêtes émis par du port `<port>`
+- `source_port=<port>` sélectionne seulement les paquets émis par du port `<port>`
 
-- `dest_port=<port>` sélectionne seulement les requêtes destiné au port `<port>`
+- `dest_port=<port>` sélectionne seulement les paquets destiné au port `<port>`
 
-- `port=<port>` sélectionne seulement les requêtes émis ou à destination du port`<port>`
+- `port=<port>` sélectionne seulement les paquets émis ou à destination du port`<port>`
+
+- `NS`/`CWR`/`ECE`/`URG`/`ACK`/`PSH`/`RST`/`SYN`/`FIN` : sélectionne seulement les paquets avec les flags tcp choisi
 
 Examples :
 
