@@ -13,7 +13,14 @@ export default function cli() {
   }
 
   let data = readF(process.argv[3]);
-  let result = many(header_parser).run(data);
+  let result = many(header_parser)
+    .map((x) =>
+      x.map((e, i) => {
+        e[0].index = i;
+        return e;
+      })
+    )
+    .run(data);
   if (result.isError) throw new Error(result.error as string);
 
   let parsed = result.result;
@@ -65,6 +72,8 @@ export default function cli() {
 
       let filter_info = l[0];
 
+      let index = filter_info.index.toString().padStart(3, "0");
+
       let ethernet_frame: {
         name: string;
         value: number | number[];
@@ -75,7 +84,7 @@ export default function cli() {
       let dest_mac = ethernet_frame[0].description;
 
       if (!l[2])
-        return `${source_mac} ---> ${dest_mac} : Insuported Internet layer (not ipv4)`;
+        return `${index}: ${source_mac} ---> ${dest_mac} : Insuported Internet layer (not ipv4)`;
 
       let ip_frame: {
         name: string;
@@ -100,7 +109,7 @@ export default function cli() {
       }
 
       if (!l[3])
-        return `${ip_source} --> ${ip_dest} : Unsuported Transport layer (not tcp)`;
+        return `${index}: ${ip_source} --> ${ip_dest} : Unsuported Transport layer (not tcp)`;
 
       let tcp_layer: {
         name: string;
@@ -121,7 +130,7 @@ export default function cli() {
       let source_port = tcp_layer[0].value.toString().padStart(6);
       let dest_port = tcp_layer[1].value.toString().padStart(6);
 
-      return `${ip_source} --> ${ip_dest} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
+      return `${index}: ${ip_source} --> ${ip_dest} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
         ", "
       )} ] Seq=${tcp_layer[2].value} Ack=${tcp_layer[3].value}`;
     })

@@ -18,15 +18,23 @@ export function filter(o: string[][], data: any): any {
     dest_port: (x: any, e: string) => x[0].layers[2] && x[0].port[1] === e,
     port: (x: any, e: string) =>
       arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
+    index: (x: any, e: string) => x[0].index == e,
   };
 
   for (const e of o)
     for (let i = 0; i < data.length; )
       if (cond_parm.includes(e[0]) && !data[i][0].layers.includes(e[0])) {
         data.splice(i, 1);
-      } else if (e[0] in arg_parm && !arg_parm[e[0]](data[i], e[1])){
+      } else if (
+        e[0] in arg_parm &&
+        typeof e[1] !== "undefined" &&
+        !arg_parm[e[0]](data[i], e[1])
+      ) {
         data.splice(i, 1);
-      } else if (tcp_flagsM.map(e => e.toLowerCase()).includes(e[0]) && !(e[0] in data[i][0])){
+      } else if (
+        tcp_flagsM.map((e) => e.toLowerCase()).includes(e[0]) &&
+        !(e[0] in data[i][0])
+      ) {
         data.splice(i, 1);
       } else {
         i++;

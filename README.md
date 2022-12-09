@@ -49,6 +49,8 @@ Les options de filtres que vous avez sont :
 
 - `http` : sélectionne seulement les requêtes http
 
+- `index=<n°> :` : sélectionne la (`<n°>`-1)ème requête par trie chronologique. (utile pour voir une requête en particulier en analyse)
+
 - `source_ip=<ip>` sélectionne seulement les requêtes émis par l'ip `<ip>`
 
 - `dest_ip=<ip>` sélectionne seulement les paquets destinés à l'ip `<ip>`
