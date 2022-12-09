@@ -7,11 +7,11 @@ import {
   possibly,
   fail,
 } from "../parser";
-import { tag, tcp_flagsM } from "./utils";
+import { filter, tag, tcp_flagsM } from "./utils";
 
 import ethernet_parser from "./ethernetP";
 import http_formater from "./httpP";
-import ip4h_parser, { ARP_parser, ip6h_parser } from "./ipP";
+import ip4h_parser, { ARP_parser, icmp_parser, ip6h_parser } from "./ipP";
 import tcp_parser from "./tcpP";
 
 export * from "./utils";
@@ -83,13 +83,20 @@ const header_parser = coroutine((run) => {
   if (protocol === 0x6) {
     tcp_frame = run(tcp_parser);
     is_http = tcp_frame[0].value === 80 || tcp_frame[1].value === 80;
-    filter_info["port"] = [tcp_frame[0].value.toString(), tcp_frame[1].value.toString()];
+    filter_info["port"] = [
+      tcp_frame[0].value.toString(),
+      tcp_frame[1].value.toString(),
+    ];
     filter_info.layers[2] = "tcp";
 
-    let tcp_flags = (tcp_frame[6].value as any[]).map(e => e.value) as number[]
-    for (let i = 0; i<tcp_flagsM.length; i++)
-      if(tcp_flags[i] === 1)
-        filter_info[tcp_flagsM[i].toLowerCase()] = true
+    let tcp_flags = (tcp_frame[6].value as any[]).map(
+      (e) => e.value
+    ) as number[];
+    for (let i = 0; i < tcp_flagsM.length; i++)
+      if (tcp_flags[i] === 1) filter_info[tcp_flagsM[i].toLowerCase()] = true;
+  } else if (protocol == 0x1) {
+    tcp_frame = run(icmp_parser);
+    filter_info.layers[2] = "icmp";
   }
 
   unknown_data = run(

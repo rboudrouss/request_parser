@@ -68,6 +68,7 @@ const ip4h_parser = sequence([
 
 export default ip4h_parser;
 
+// non utilisé
 export const icmp_parser = sequence([
   Uint(8).map(
     tag("Type", (x) => {

@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "fs";
 const reHexDigits = /^[0-9a-fA-F]+/;
 
 export function filter(o: string[][], data: any): any {
-  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http"];
+  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp"];
   let arg_parm: { [key: string]: (x: any, e: string) => boolean } = {
     source_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[0] === e,
     dest_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[1] === e,
