@@ -4,6 +4,11 @@ TODO make a more readable way than json
 
 TODO test icmp & ipv6 x')
 
+
+# projet de réseaux
+## Boudrouss Réda 28712638
+## Zhenyao lin 28708274
+
 ## Input
 
 must take in input a hex dup + offset and interpretation of the packets. (see `src/data/txt/` for examples)
