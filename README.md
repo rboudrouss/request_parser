@@ -81,9 +81,9 @@ Examples :
 
 Cette commande lit le ficher `http2.txtcap` et affiche en mode flèches les requêtes utilisant tcp, avec comme ip source `145.254.160.237`, emis ou à destination du port `80` et l'écris dans le fichier `test.txt`.
 
-- `node cli.js a data/txt/http2.txtcap -o data/http2.json`
+- `node cli.js a data/txt/http2.txtcap -F index=29 -o data/http2.json`
 
-Cette commande lit le fichier `http2.txtcap` et affiche le _json_ qui contient toutes les informations nécessaires de la trame et l'écrit dans le fichier `http2.json`
+Cette commande lit le fichier `http2.txtcap` et affiche le _json_ qui contient toutes les informations nécessaires de la trame n°29 et l'écrit dans le fichier `http2.json`
 
 Il y a des fichiers d'exemple à excecuter dans le dossier `src/data/txt`
 
