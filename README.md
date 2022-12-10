@@ -2,9 +2,10 @@ TODO add a release flag with projet already built
 
 TODO test icmp & ipv6 x')
 
-
 # projet de réseaux
+
 ## Boudrouss Réda 28712638
+
 ## Zhenyao lin 28708274
 
 ## Input
@@ -20,9 +21,7 @@ _Nous avons fait le choix de n'utiliser aucune dépendance pour le projet hormis
 
 Pour excecuter notre code vous avez 2 choix :
 
-
-Mais dans les 2 cas, on aura besoin de l'interpréteur javacript `node.js` à installer ici:  https://nodejs.org/en/ (ou avec pour packet manager)
-
+Mais dans les 2 cas, on aura besoin de l'interpréteur javacript `node.js` à installer ici: https://nodejs.org/en/ (ou avec pour packet manager)
 
 ### Méthode facile
 
@@ -42,9 +41,9 @@ Entrez dans le dossier `/src/` (ou `build/` si vous executer la version javascri
 
 La syntaxe ressemble à ce qui suit `node cli.js <a/f> <input file> [-F <options>] [-o <output file>] [-h]`.
 
-l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE. 
+l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE.
 
-Le `-h` avec le mode `A` permet d'avoir une version plus lisible (*humaine*) de la description de la frame
+Le `-h` avec le mode `A` permet d'avoir une version plus lisible (_humaine_) de la description de la frame
 
 ## Les filtres
 
@@ -102,7 +101,7 @@ Il y a des fichiers d'exemple à excecuter dans le dossier `src/data/txt`
 
 ts-node transpile sur le moment le code en javascript ce qui peut s'avérer lent surtout sur des petites machines. Il est possible de _build_ le projet en JS pour l'excuter plus rapidement.
 
-Pour se faire dans le root du projet taper `npm run build`. ça va transpiler le code, et une fois cela fait il suffit d'excécuter avec node le fichier `build/cli.js` sous la forme  `node cli.js`.
+Pour se faire dans le root du projet taper `npm run build`. ça va transpiler le code, et une fois cela fait il suffit d'excécuter avec node le fichier `build/cli.js` sous la forme `node cli.js`.
 
 Si vous avez une erreur pendant le build c'est que vous avez peut-être pas installé les nodes_modules avec `npm i`
 
@@ -138,7 +137,7 @@ Dans un soucis d'uniformisation et de praticité, les données en entrée sont t
 
 - `httpP.ts` contient la fonction qui décrit un protocole http, c'est pas vraiment un parseur à proprement parler
 
-- `index.ts` contient le parser principale `header_parser`, ce parser est capable de parser *exactement **une** frame* et de différencier les différents protocole et de choisir celui qui correspond. Pour parser plusieurs frames, il faut le coupler au parser combinator `many`
+- `index.ts` contient le parser principale `header_parser`, ce parser est capable de parser _exactement **une** frame_ et de différencier les différents protocole et de choisir celui qui correspond. Pour parser plusieurs frames, il faut le coupler au parser combinator `many`
 
 - `utils.ts` contient aussi des fonctions et constantes assez utilisé partout, mais contient aussi et surtout la fonction `filter` qui permet le filtrage selon les filtres données en paramètres.
 
