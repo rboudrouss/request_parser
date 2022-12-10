@@ -6,7 +6,7 @@ import { many } from "./parser";
 export default function cli() {
   if (process.argv.length < 4) {
     console.log(
-      "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>] [-o <output file>]`.",
+      "Please indicate the trace file as `node cli.js <a/f> <input file> [-F <vos filtres>] [-o <output file>] [-h]`.",
       "\na is for analyse, f is for FLECHE, read README for more info"
     );
     exit(1);
@@ -27,6 +27,8 @@ export default function cli() {
 
   let last_parm_index: number | undefined = undefined;
   let log_to_file = false;
+  let human = false;
+  let human_msg = "";
 
   if (process.argv.includes("-o")) {
     last_parm_index = process.argv.indexOf("-o");
@@ -41,6 +43,49 @@ export default function cli() {
     if (filobj[0][0] !== "-f") console.log("unknown parameter", filobj[0]);
     else parsed = filter(filobj.slice(1) as string[][], parsed);
   }
+
+  if (process.argv.includes("-h")) {
+    human = true;
+    human_msg = parsed
+      .map((frame, i) =>
+        frame
+          ? `\n\nframe n°${i}---------\n` + frame
+              .map((protocol, i, frame2) =>
+                frame2[0].layers[i - 1]
+                  ? "Protocol : " +
+                    frame2[0].layers[i - 1] +
+                    "\n" +
+                    protocol
+                      .map((v2: any) =>
+                        v2.value
+                          ? v2.name === "Flags"
+                            ? "\t Flags : " +
+                              v2.value
+                                .map(
+                                  (temp: any) =>
+                                    temp.name + " : " + temp.value.toString()
+                                )
+                                .join(" ; ")
+                            : "\t" +
+                              v2.name +
+                              " : " +
+                              v2.value.toString() +
+                              (v2.description
+                                ? " (" + v2.description + ")"
+                                : "")
+                          : ""
+                      )
+                      .filter((a: any) => a)
+                      .join("\n")
+                  : ``
+              )
+              .filter((a) => a)
+              .join("\n")
+          : "unknown"
+      )
+      .join("");
+  }
+
   if (process.argv[2].toUpperCase().startsWith("A")) {
     if (
       log_to_file &&
@@ -48,20 +93,24 @@ export default function cli() {
       typeof process.argv[last_parm_index + 1] !== "undefined"
     )
       writeF(
-        JSON.stringify(
-          parsed.map((e) => e.slice(1)),
-          null,
-          2
-        ),
+        human
+          ? human_msg
+          : JSON.stringify(
+              parsed.map((e) => e.slice(1)),
+              null,
+              2
+            ),
         process.argv[last_parm_index + 1]
       );
     else
       console.log(
-        JSON.stringify(
-          parsed.map((e) => e.slice(1)),
-          null,
-          2
-        )
+        human
+          ? human_msg
+          : JSON.stringify(
+              parsed.map((e) => e.slice(1)),
+              null,
+              2
+            )
       );
     return;
   }

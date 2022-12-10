@@ -1,7 +1,5 @@
 TODO add a release flag with projet already built
 
-TODO make a more readable way than json
-
 TODO test icmp & ipv6 x')
 
 
@@ -34,11 +32,19 @@ Et exceuter avec la commande suivante `node cli.js`. Toute les commandes et filt
 
 ### interpréter directement le code source
 
-Installer les modules avec `npm i` (pas besoin de fix les vulnérabilités)
+Installer les modules avec `npm i` (pas besoin de fix les vulnérabilités).
 
-ensuite pour executer le code, entrez dans le dossier `/src/` et executer la commande suivantes avec la syntaxe suivante `<npx> ts-node cli.ts <a/f> <input file> [-F <options>] [-o <output file>]`.
+Vous pouvez donc utiliser `<npx> ts-node cli.ts` pour executer directement le code. `npx` est optionnel mais peut servir dans le cas où `ts-node` n'est pas dans le PATH.
 
-`npx` est optionnel mais peut servir dans le cas où `ts-node` n'est pas dans le PATH. l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE. 
+## Utilisation
+
+Entrez dans le dossier `/src/` (ou `build/` si vous executer la version javascript avec nodejs)
+
+La syntaxe ressemble à ce qui suit `node cli.js <a/f> <input file> [-F <options>] [-o <output file>] [-h]`.
+
+l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLECHE. 
+
+Le `-h` avec le mode `A` permet d'avoir une version plus lisible (*humaine*) de la description de la frame
 
 ## Les filtres
 
