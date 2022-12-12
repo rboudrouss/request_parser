@@ -1,11 +1,19 @@
-import { sequence, Uint } from "../parser";
+import { sequence, Uint, tup } from "../parser";
 import { MAC_parser } from "./basicP";
-import { tag } from "./utils";
+import { tag, taged_value } from "./utils";
 
-const ethernet_parser = sequence([
-  MAC_parser("Destination Mac Adress"), // dest MAC
-  MAC_parser("Source Mac Adress"), // source MAC
-  Uint(16).map(tag("Type")), // type
-]);
+export type ethernet_result = [
+  taged_value<number[]>,
+  taged_value<number[]>,
+  taged_value<number>
+];
+
+const ethernet_parser = sequence<ethernet_result, unknown>(
+  tup(
+    MAC_parser("Destination Mac Adress"), // dest MAC
+    MAC_parser("Source Mac Adress"), // source MAC
+    Uint(16).map(tag("Type")) // type
+  )
+);
 
 export default ethernet_parser;

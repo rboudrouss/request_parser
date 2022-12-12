@@ -1,9 +1,17 @@
 import { readFileSync, writeFileSync } from "fs";
+import { header_type } from ".";
+
+export interface taged_value<T> {
+  name: string;
+  value: T;
+  description: string | null;
+}
 
 // HACK
 const reHexDigits = /^[0-9a-fA-F]+/;
 
-export function filter(o: string[][], data: any): any {
+// TODO typer ça
+export function filter(o: string[][], data: header_type[]): any {
   let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp"];
   let arg_parm: { [key: string]: (x: any, e: string) => boolean } = {
     source_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[0] === e,
@@ -19,8 +27,8 @@ export function filter(o: string[][], data: any): any {
     port: (x: any, e: string) =>
       arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
     index: (x: any, e: string) => x[0].index == e,
-    max_index: (x: any, e:string) => x[0].index <= e,
-    min_index:(x:any, e:string) => x[0].index >= e
+    max_index: (x: any, e: string) => x[0].index <= e,
+    min_index: (x: any, e: string) => x[0].index >= e,
   };
 
   for (const e of o)
@@ -33,10 +41,7 @@ export function filter(o: string[][], data: any): any {
         !arg_parm[e[0]](data[i], e[1])
       ) {
         data.splice(i, 1);
-      } else if (
-        tcp_flagsM.map((e) => e.toLowerCase()).includes(e[0]) &&
-        !(e[0] in data[i][0])
-      ) {
+      } else if (e[0] in tcp_flagsM && !(e[0] in data[i][0].tcp_flags)) {
         data.splice(i, 1);
       } else {
         i++;
@@ -85,7 +90,7 @@ export const writeF = (data: string, s: string): void => {
 
 export const tag =
   <T>(name: string, descFN?: (x: T) => string) =>
-  (value: T) => {
+  (value: T): taged_value<T> => {
     return {
       name,
       value,
@@ -93,14 +98,25 @@ export const tag =
     };
   };
 
-export const tcp_flagsM = [
-  "NS",
-  "CWR",
-  "ECE",
-  "URG",
-  "ACK",
-  "PSH",
-  "RST",
-  "SYN",
-  "FIN",
+export enum tcp_flagE {
+  "ns",
+  "cwr",
+  "ece",
+  "urg",
+  "ack",
+  "psh",
+  "rst",
+  "syn",
+  "fin",
+}
+
+export const tcp_flagsM: tcp_flagE[] = [
+  tcp_flagE.ns,
+  tcp_flagE.cwr,
+  tcp_flagE.ece,
+  tcp_flagE.urg,
+  tcp_flagE.ack,
+  tcp_flagE.rst,
+  tcp_flagE.syn,
+  tcp_flagE.fin,
 ];

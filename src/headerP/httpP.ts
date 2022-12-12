@@ -1,6 +1,6 @@
 // FIXME make it detected better
-const http_formater = (data: string) => {
-  if (!data) return data;
+const http_formater = (data: string): string[] => {
+  if (!data) return [data];
 
   let tdata = data
     .split("")

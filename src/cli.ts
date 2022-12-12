@@ -1,5 +1,11 @@
 import { exit } from "process";
-import header_parser, { filter, readF, tcp_flagsM, writeF } from "./headerP";
+import header_parser, {
+  filter,
+  readF,
+  tcp_flagE,
+  tcp_flagsM,
+  writeF,
+} from "./headerP";
 import { many } from "./parser";
 
 // TODO maybe make relative ack & seq numbers ?
@@ -44,47 +50,47 @@ export default function cli() {
     else parsed = filter(filobj.slice(1) as string[][], parsed);
   }
 
-  if (process.argv.includes("-h")) {
-    human = true;
-    human_msg = parsed
-      .map((frame, i) =>
-        frame
-          ? `\n\nframe n°${i}---------\n` + frame
-              .map((protocol, i, frame2) =>
-                frame2[0].layers[i - 1]
-                  ? "Protocol : " +
-                    frame2[0].layers[i - 1] +
-                    "\n" +
-                    protocol
-                      .map((v2: any) =>
-                        v2.value
-                          ? v2.name === "Flags"
-                            ? "\t Flags : " +
-                              v2.value
-                                .map(
-                                  (temp: any) =>
-                                    temp.name + " : " + temp.value.toString()
-                                )
-                                .join(" ; ")
-                            : "\t" +
-                              v2.name +
-                              " : " +
-                              v2.value.toString() +
-                              (v2.description
-                                ? " (" + v2.description + ")"
-                                : "")
-                          : ""
-                      )
-                      .filter((a: any) => a)
-                      .join("\n")
-                  : ``
-              )
-              .filter((a) => a)
-              .join("\n")
-          : "unknown"
-      )
-      .join("");
-  }
+  // if (process.argv.includes("-h")) {
+  //   human = true;
+  //   human_msg = parsed
+  //     .map((frame, i) =>
+  //       frame
+  //         ? `\n\nframe n°${i}---------\n` + frame
+  //             .map((protocol, i, frame2) =>
+  //               frame2[0].layers[i - 1]
+  //                 ? "Protocol : " +
+  //                   frame2[0].layers[i - 1] +
+  //                   "\n" +
+  //                   protocol
+  //                     .map((v2: any) =>
+  //                       v2.value
+  //                         ? v2.name === "Flags"
+  //                           ? "\t Flags : " +
+  //                             v2.value
+  //                               .map(
+  //                                 (temp: any) =>
+  //                                   temp.name + " : " + temp.value.toString()
+  //                               )
+  //                               .join(" ; ")
+  //                           : "\t" +
+  //                             v2.name +
+  //                             " : " +
+  //                             v2.value.toString() +
+  //                             (v2.description
+  //                               ? " (" + v2.description + ")"
+  //                               : "")
+  //                         : ""
+  //                     )
+  //                     .filter((a: any) => a)
+  //                     .join("\n")
+  //                 : ``
+  //             )
+  //             .filter((a) => a)
+  //             .join("\n")
+  //         : "unknown"
+  //     )
+  //     .join("");
+  // }
 
   if (process.argv[2].toUpperCase().startsWith("A")) {
     if (
@@ -121,7 +127,9 @@ export default function cli() {
 
       let filter_info = l[0];
 
-      let index = filter_info.index.toString().padStart(3, "0");
+      let index = filter_info.index
+        ? filter_info.index.toString().padStart(3, "0")
+        : 0;
 
       let ethernet_frame: {
         name: string;
@@ -174,7 +182,7 @@ export default function cli() {
 
       let act_flags: string[] = [];
       for (let i = 0; i < tcp_flagsM.length; i++)
-        if (tcp_flags[i]) act_flags.push(tcp_flagsM[i]);
+        if (tcp_flags[i]) act_flags.push(tcp_flagE[tcp_flagsM[i]]);
 
       let source_port = tcp_layer[0].value.toString().padStart(6);
       let dest_port = tcp_layer[1].value.toString().padStart(6);

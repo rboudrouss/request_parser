@@ -14,7 +14,7 @@ export const Bit = new Parser<number, unknown>((s) => {
   return s.updateBitIndex(1).updateResult(result);
 });
 
-export const One = new Parser<number, unknown>((s) => {
+export const One = new Parser<1, unknown>((s) => {
   if (s.isError) return s;
 
   if (s.index >= s.dataView.byteLength)
@@ -27,7 +27,7 @@ export const One = new Parser<number, unknown>((s) => {
     : s.updateError(`One: Expected '1' got '0'`);
 });
 
-export const Zero = new Parser<number, unknown>((s) => {
+export const Zero = new Parser<0, unknown>((s) => {
   if (s.isError) return s;
 
   if (s.index >= s.dataView.byteLength)
