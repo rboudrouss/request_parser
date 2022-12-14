@@ -1,6 +1,5 @@
 import Parser, { ParserTuple } from "./parser";
 import ParserState from "./pState";
-import { tup } from "./utils";
 
 /** Takes an array of parsers, and returns a new parser that matches each of them sequentially, collecting up the results into an array. */
 export const sequence = <R extends any[], D>(parsers: ParserTuple<R, D>) =>

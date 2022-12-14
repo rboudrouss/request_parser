@@ -5,7 +5,7 @@ const http_formater = (data: string): string[] => {
   let tdata = data
     .split("")
     .reduce((acc: string[][], _, i, arr) => {
-      if (i % 2 == 0) acc.push(arr.slice(i, i + 2));
+      if (i % 2 === 0) acc.push(arr.slice(i, i + 2));
       return acc;
     }, [])
     .map((s) => Number(`0x${s[0]}${s[1]}`))

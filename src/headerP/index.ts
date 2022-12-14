@@ -62,7 +62,7 @@ const header_parser = coroutine((run): header_type => {
     tcp_flags: [],
   };
 
-  const { index, bitIndex } = run(getIndex);
+  const { index } = run(getIndex);
 
   if (ethernet_frame[2].value === 0x800) {
     // protocol is ipv4
@@ -91,7 +91,7 @@ const header_parser = coroutine((run): header_type => {
     let sourcep = ip_frame[6];
     let desth = ip_frame[7];
     let destp = ip_frame[8];
-    if (ip_frame[0].value == 1 && ip_frame[1].value === 0x800)
+    if (ip_frame[0].value === 1 && ip_frame[1].value === 0x800)
       filter_info["ip"] = [
         sourceh.description as string,
         sourcep.description as string,
@@ -122,7 +122,7 @@ const header_parser = coroutine((run): header_type => {
     let tcp_flags = tcp_frame[6].value.map((e) => e.value);
     for (let i = 0; i < tcp_flagsM.length; i++)
       if (tcp_flags[i] === 1) filter_info.tcp_flags.push(tcp_flagsM[i]);
-  } else if (protocol == 0x1) {
+  } else if (protocol === 0x1) {
     tcp_frame = run(icmp_parser);
     filter_info.layers[2] = "icmp";
   }
@@ -147,7 +147,7 @@ const header_parser = coroutine((run): header_type => {
     ? unknown_data.value[0]
         ?.split("")
         ?.reduce((acc: string[][], _, i, arr) => {
-          if (i % 2 == 0) acc.push(arr.slice(i, i + 2));
+          if (i % 2 === 0) acc.push(arr.slice(i, i + 2));
           return acc;
         }, [])
         ?.map((s) => Number(`0x${s[0]}${s[1]}`))

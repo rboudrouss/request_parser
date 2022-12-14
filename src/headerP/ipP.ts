@@ -143,17 +143,17 @@ export type ARP_result = [
 export const ARP_parser = sequence(
   tup(
     Uint(16).map(
-      tag("Hardware type", (x) => (x == 1 ? "ethernet" : "unknown"))
+      tag("Hardware type", (x) => (x===1 ? "ethernet" : "unknown"))
     ),
     Uint(16).map(
-      tag("Protocol type", (x) => (x == 0x800 ? "ipv4" : "unknown"))
+      tag("Protocol type", (x) => (x===0x800 ? "ipv4" : "unknown"))
     ),
     Uint(8).map(tag("hardware address length")),
     Uint(8).map(tag("protocol address length")),
     Uint(16).map(tag("operation"))
   )
 ).chain((x): Parser<ARP_result, unknown> => {
-  if (x[0].value == 1 && x[1].value === 0x800)
+  if (x[0].value===1 && x[1].value === 0x800)
     return sequence(
       tup(
         MAC_parser("Sender Hardware Address"),

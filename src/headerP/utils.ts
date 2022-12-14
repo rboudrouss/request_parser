@@ -8,6 +8,30 @@ import {
   tcp_result,
 } from ".";
 
+export enum tcp_flagE {
+  "ns",
+  "cwr",
+  "ece",
+  "urg",
+  "ack",
+  "psh",
+  "rst",
+  "syn",
+  "fin",
+}
+
+export const tcp_flagsM: tcp_flagE[] = [
+  tcp_flagE.ns,
+  tcp_flagE.cwr,
+  tcp_flagE.ece,
+  tcp_flagE.urg,
+  tcp_flagE.ack,
+  tcp_flagE.psh,
+  tcp_flagE.rst,
+  tcp_flagE.syn,
+  tcp_flagE.fin,
+];
+
 export interface taged_value<T> {
   name: string;
   value: T;
@@ -177,7 +201,7 @@ export const convertToBin = (data: string): Uint8Array => {
   let numArray = data
     .split("")
     .reduce((acc: string[][], _, i, arr) => {
-      if (i % 2 == 0) acc.push(arr.slice(i, i + 2));
+      if (i % 2 === 0) acc.push(arr.slice(i, i + 2));
       return acc;
     }, [])
     .map((s) => Number(`0x${s[0]}${s[1]}`));
@@ -217,27 +241,3 @@ export const tag =
       description: descFN ? descFN(value) : null,
     };
   };
-
-export enum tcp_flagE {
-  "ns",
-  "cwr",
-  "ece",
-  "urg",
-  "ack",
-  "psh",
-  "rst",
-  "syn",
-  "fin",
-}
-
-export const tcp_flagsM: tcp_flagE[] = [
-  tcp_flagE.ns,
-  tcp_flagE.cwr,
-  tcp_flagE.ece,
-  tcp_flagE.urg,
-  tcp_flagE.ack,
-  tcp_flagE.psh,
-  tcp_flagE.rst,
-  tcp_flagE.syn,
-  tcp_flagE.fin,
-];

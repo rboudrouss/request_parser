@@ -59,7 +59,7 @@ export const Int = (n: number): Parser<number, unknown> => {
   if (n > 32) throw new Error(`Uint: n must be less than 32, git '${n}'`);
 
   return sequence(Array.from({ length: n }, () => Bit)).map((bits) => {
-    if (bits[0] == 0)
+    if (bits[0]===0)
       return bits.reduce((acc, bit, i) => {
         return acc + Number(BigInt(bit) << BigInt(n - 1 - i));
       }, 0);
@@ -97,7 +97,7 @@ export const RawString = (s: string) => {
 export const readUntilByte = new Parser<number | null>((s) => {
   if (s.isError) return s;
 
-  if (s.bitIndex % 8 == 0) return s.updateResult(null);
+  if (s.bitIndex % 8===0) return s.updateResult(null);
 
   if (s.index >= s.dataView.byteLength)
     return s.updateError(`readUntilByte: Unexpected end of input`);
