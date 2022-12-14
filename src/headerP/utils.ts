@@ -1,5 +1,8 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { readFileSync, writeFileSync } from "fs";
+=======
+>>>>>>> f59150d (doesn't like node thingis)
 import {
   header_type,
   filter_dict,
@@ -219,6 +222,7 @@ export const cleanInput = (data: string): string => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Use it only if executed by <ts->node <!>
 export const readF = (s: string): Uint8Array => {
   return convertToBin(cleanInput(readFileSync(s).toString()));
@@ -235,6 +239,8 @@ export const writeF = (data: string, s: string): void => {
 
 =======
 >>>>>>> 6858648 (get reacted)
+=======
+>>>>>>> f59150d (doesn't like node thingis)
 export const tag =
   <T>(name: string, descFN?: (x: T) => string) =>
   (value: T): taged_value<T> => {
