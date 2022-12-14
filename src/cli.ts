@@ -1,11 +1,9 @@
 import { exit } from "process";
 import {
   filter,
-  filter_dict,
   header_parsers,
   human_str,
   readF,
-  TCPLayerT,
   to_arrow,
   writeF,
 } from "./headerP";
@@ -27,14 +25,8 @@ export default function cli() {
   let parsed = result.result;
 
   let file_index: number | undefined = undefined;
-  let log_to_file = false;
-  let human = false;
-  let human_msg = "";
 
-  if (process.argv.includes("-o")) {
-    file_index = process.argv.indexOf("-o") + 1;
-    log_to_file = true;
-  }
+  if (process.argv.includes("-o")) file_index = process.argv.indexOf("-o") + 1;
 
   if (process.argv.includes("-F")) {
     let f_index = process.argv.indexOf("-F");
@@ -45,45 +37,20 @@ export default function cli() {
   }
 
   if (process.argv[2].toUpperCase().startsWith("A")) {
-    if (process.argv.includes("-h")) {
-      human = true;
-      human_msg = parsed.map((header) => human_str(header)).join("\n");
-    }
-    if (
-      log_to_file &&
-      file_index &&
-      typeof process.argv[file_index] !== "undefined"
-    )
-      writeF(
-        human
-          ? human_msg
-          : JSON.stringify(
-              parsed.map((e) => e.slice(1)),
-              null,
-              2
-            ),
-        process.argv[file_index]
-      );
-    else
-      console.log(
-        human
-          ? human_msg
-          : JSON.stringify(
-              parsed.map((e) => e.slice(1)),
-              null,
-              2
-            )
-      );
+    let msg = process.argv.includes("-h")
+      ? parsed.map((e) => human_str(e)).join("\n")
+      : JSON.stringify(parsed.map((e) => e.slice(1)));
+
+    if (file_index && typeof process.argv[file_index] !== "undefined")
+      writeF(msg, process.argv[file_index]);
+    else console.log(msg);
+
     return;
   }
 
   let msg = parsed.map((l) => to_arrow(l[0], l[3])).join("\n");
 
-  if (
-    log_to_file &&
-    file_index &&
-    typeof process.argv[file_index] !== "undefined"
-  )
+  if (file_index && typeof process.argv[file_index] !== "undefined")
     writeF(msg, process.argv[file_index]);
   else console.log(msg);
   return;

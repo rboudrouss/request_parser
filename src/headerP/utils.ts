@@ -1,5 +1,12 @@
 import { readFileSync, writeFileSync } from "fs";
-import { header_type, IPLayerT, ethernet_result, TCPLayerT, filter_dict, tcp_result } from ".";
+import {
+  header_type,
+  IPLayerT,
+  ethernet_result,
+  TCPLayerT,
+  filter_dict,
+  tcp_result,
+} from ".";
 
 export interface taged_value<T> {
   name: string;
@@ -72,7 +79,6 @@ export function layer_str(
   else msg += "unknown layer :\n";
 
   data.map((element) => {
-    let o: any;
     if (!element) return;
     msg += "\t";
 
@@ -163,7 +169,6 @@ export function to_arrow(
     ", "
   )} ] Seq=${seq_N} Ack=${ack_N}`;
 }
-
 
 export const convertToBin = (data: string): Uint8Array => {
   if (!reHexDigits.test(data))
