@@ -1,12 +1,73 @@
 import { exit } from "process";
+import { TaggedTemplateExpression } from "typescript";
 import header_parser, {
+  ethernet_result,
   filter,
+  filter_dict,
+  header_type,
+  IPLayerT,
   readF,
+  taged_value,
+  TCPLayerT,
   tcp_flagE,
   tcp_flagsM,
   writeF,
 } from "./headerP";
 import { many } from "./parser";
+
+function layer_str(
+  data: IPLayerT | TCPLayerT | ethernet_result | null,
+  name?: string | null
+): string {
+  if (!data) return "";
+  let msg = "";
+  if (name && name !== null) msg += `layer ${name} :\n`;
+  else msg += "unknown layer :\n";
+
+  data.map((element) => {
+    let o: any;
+    if (!element) return;
+    msg += "\t";
+
+    if (element.name.toLowerCase() === "flags") {
+      let flags: taged_value<number>[] = element.value as taged_value<number>[];
+      msg += "Flags: ";
+      msg += flags
+        .map((element2) =>
+          element2.value === 1 ? element2.name.toUpperCase() + " " : ""
+        )
+        .join("");
+      msg += "\n";
+    } else {
+      if (element.value === null) return;
+      msg +=
+        element.name +
+        ": " +
+        (!element.description || element.description === null
+          ? element.value.toString()
+          : element.description) +
+        "\n";
+    }
+  });
+  return msg;
+}
+
+function human_str(data: header_type): string {
+  let msg = "";
+
+  let filterI: filter_dict = data[0];
+  if (filterI.index)
+    msg += `------- frame n°${filterI.index
+      .toString()
+      .padStart(3, "0")} ------\n`;
+
+  msg += data
+    .slice(1)
+    .map((layer, i, _) => layer_str(layer as any, filterI.layers[i]))
+    .join("\n");
+
+  return msg;
+}
 
 // TODO maybe make relative ack & seq numbers ?
 export default function cli() {
@@ -50,47 +111,10 @@ export default function cli() {
     else parsed = filter(filobj.slice(1) as string[][], parsed);
   }
 
-  // if (process.argv.includes("-h")) {
-  //   human = true;
-  //   human_msg = parsed
-  //     .map((frame, i) =>
-  //       frame
-  //         ? `\n\nframe n°${i}---------\n` + frame
-  //             .map((protocol, i, frame2) =>
-  //               frame2[0].layers[i - 1]
-  //                 ? "Protocol : " +
-  //                   frame2[0].layers[i - 1] +
-  //                   "\n" +
-  //                   protocol
-  //                     .map((v2: any) =>
-  //                       v2.value
-  //                         ? v2.name === "Flags"
-  //                           ? "\t Flags : " +
-  //                             v2.value
-  //                               .map(
-  //                                 (temp: any) =>
-  //                                   temp.name + " : " + temp.value.toString()
-  //                               )
-  //                               .join(" ; ")
-  //                           : "\t" +
-  //                             v2.name +
-  //                             " : " +
-  //                             v2.value.toString() +
-  //                             (v2.description
-  //                               ? " (" + v2.description + ")"
-  //                               : "")
-  //                         : ""
-  //                     )
-  //                     .filter((a: any) => a)
-  //                     .join("\n")
-  //                 : ``
-  //             )
-  //             .filter((a) => a)
-  //             .join("\n")
-  //         : "unknown"
-  //     )
-  //     .join("");
-  // }
+  if (process.argv.includes("-h")) {
+    human = true;
+    human_msg = parsed.map((header) => human_str(header)).join("\n");
+  }
 
   if (process.argv[2].toUpperCase().startsWith("A")) {
     if (

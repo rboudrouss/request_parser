@@ -39,8 +39,8 @@ export type header_type = [
   ethernet_result,
   IPLayerT | null,
   TCPLayerT | null,
-  taged_value<string[] | null>,
-  taged_value<string> | null
+  [taged_value<string[] | null>],
+  [taged_value<string> | null]
 ];
 
 // TODO make this code cleaner / find a better way
@@ -163,9 +163,16 @@ const header_parser = coroutine((run): header_type => {
         } as taged_value<string[]>)
       : unknown_data;
 
-    return [filter_info, ethernet_frame, ip_frame, tcp_frame, data, peek];
+    return [filter_info, ethernet_frame, ip_frame, tcp_frame, [data], [peek]];
   }
-  return [filter_info, ethernet_frame, ip_frame, tcp_frame, unknown_data, peek];
+  return [
+    filter_info,
+    ethernet_frame,
+    ip_frame,
+    tcp_frame,
+    [unknown_data],
+    [peek],
+  ];
 });
 
 export default header_parser;
