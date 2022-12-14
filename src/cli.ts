@@ -1,10 +1,11 @@
 import { exit } from "process";
-import { TaggedTemplateExpression } from "typescript";
-import header_parser, {
+import {
   ethernet_result,
   filter,
   filter_dict,
+  header_parsers,
   header_type,
+  human_str,
   IPLayerT,
   readF,
   taged_value,
@@ -13,64 +14,6 @@ import header_parser, {
   tcp_flagsM,
   writeF,
 } from "./headerP";
-import { many } from "./parser";
-
-function layer_str(
-  data: IPLayerT | TCPLayerT | ethernet_result | null,
-  name?: string | null
-): string {
-  if (!data) return "";
-  let msg = "";
-  if (name && name !== null) msg += `layer ${name} :\n`;
-  else msg += "unknown layer :\n";
-
-  data.map((element) => {
-    let o: any;
-    if (!element) return;
-    msg += "\t";
-
-    if (element.name.toLowerCase() === "flags") {
-      let flags: taged_value<number>[] = element.value as taged_value<number>[];
-      msg += "Flags: ";
-      msg += flags
-        .map((element2) =>
-          element2.value === 1 ? element2.name.toUpperCase() + " " : ""
-        )
-        .join("");
-      msg += "\n";
-    } else {
-      if (element.value === null) return;
-      if (name === "http")
-        msg += (element.value as unknown as string[]).join("\n\t") + "\n";
-      else
-        msg +=
-          element.name +
-          ": " +
-          (!element.description || element.description === null
-            ? element.value.toString()
-            : element.description) +
-          "\n";
-    }
-  });
-  return msg;
-}
-
-function human_str(data: header_type): string {
-  let msg = "";
-
-  let filterI: filter_dict = data[0];
-  if (filterI.index)
-    msg += `------- frame n°${filterI.index
-      .toString()
-      .padStart(3, "0")} ------\n`;
-
-  msg += data
-    .slice(1)
-    .map((layer, i, _) => layer_str(layer as any, filterI.layers[i]))
-    .join("\n");
-
-  return msg;
-}
 
 // TODO maybe make relative ack & seq numbers ?
 export default function cli() {
@@ -83,14 +26,7 @@ export default function cli() {
   }
 
   let data = readF(process.argv[3]);
-  let result = many(header_parser)
-    .map((x) =>
-      x.map((e, i) => {
-        e[0].index = i;
-        return e;
-      })
-    )
-    .run(data);
+  let result = header_parsers.run(data);
   if (result.isError) throw new Error(result.error as string);
 
   let parsed = result.result;

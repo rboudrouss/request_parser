@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "fs";
-import { header_type } from ".";
+import { header_type, IPLayerT, ethernet_result, TCPLayerT, filter_dict } from ".";
 
 export interface taged_value<T> {
   name: string;
@@ -60,6 +60,63 @@ export function filter(o: string[][], data: header_type[]): any {
   }
 
   return data;
+}
+
+export function layer_str(
+  data: IPLayerT | TCPLayerT | ethernet_result | null,
+  name?: string | null
+): string {
+  if (!data) return "";
+  let msg = "";
+  if (name && name !== null) msg += `layer ${name} :\n`;
+  else msg += "unknown layer :\n";
+
+  data.map((element) => {
+    let o: any;
+    if (!element) return;
+    msg += "\t";
+
+    if (element.name.toLowerCase() === "flags") {
+      let flags: taged_value<number>[] = element.value as taged_value<number>[];
+      msg += "Flags: ";
+      msg += flags
+        .map((element2) =>
+          element2.value === 1 ? element2.name.toUpperCase() + " " : ""
+        )
+        .join("");
+      msg += "\n";
+    } else {
+      if (element.value === null) return;
+      if (name === "http")
+        msg += (element.value as unknown as string[]).join("\n\t") + "\n";
+      else
+        msg +=
+          element.name +
+          ": " +
+          (!element.description || element.description === null
+            ? element.value.toString()
+            : element.description) +
+          "\n";
+    }
+  });
+  return msg;
+}
+
+export function human_str(data: header_type): string {
+  let msg = "";
+
+  let filterI: filter_dict = data[0];
+  if (filterI.index)
+    msg += `------- frame n°${filterI.index
+      .toString()
+      .padStart(3, "0")} ------\n`;
+
+  msg += data
+    .slice(1)
+    .map((layer, i, _) => layer_str(layer as any, filterI.layers[i]))
+    .join("\n");
+
+  return msg;
 }
 
 export const convertToBin = (data: string): Uint8Array => {

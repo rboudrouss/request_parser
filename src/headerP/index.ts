@@ -6,6 +6,7 @@ import {
   peekUInts,
   possibly,
   fail,
+  many,
 } from "../parser";
 import { filter, tag, taged_value, tcp_flagE, tcp_flagsM } from "./utils";
 
@@ -174,5 +175,14 @@ const header_parser = coroutine((run): header_type => {
     [peek],
   ];
 });
+
+
+export const header_parsers = many(header_parser)
+    .map((x) =>
+      x.map((e, i) => {
+        e[0].index = i;
+        return e;
+      })
+    )
 
 export default header_parser;
