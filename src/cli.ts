@@ -31,35 +31,33 @@ export default function cli() {
 
   let parsed = result.result;
 
-  let last_parm_index: number | undefined = undefined;
+  let file_index: number | undefined = undefined;
   let log_to_file = false;
   let human = false;
   let human_msg = "";
 
   if (process.argv.includes("-o")) {
-    last_parm_index = process.argv.indexOf("-o");
+    file_index = process.argv.indexOf("-o") + 1;
     log_to_file = true;
   }
 
-  let filobj: (string | string[])[] = process.argv
-    .slice(4, last_parm_index)
-    ?.map((e) => e.toLowerCase().split("="));
-
-  if (typeof filobj !== "undefined" && filobj.length !== 0) {
-    if (filobj[0][0] !== "-f") console.log("unknown parameter", filobj[0]);
-    else parsed = filter(filobj.slice(1) as string[][], parsed);
-  }
-
-  if (process.argv.includes("-h")) {
-    human = true;
-    human_msg = parsed.map((header) => human_str(header)).join("\n");
+  if (process.argv.includes("-F")) {
+    let f_index = process.argv.indexOf("-F");
+    let filobj = process.argv
+      .slice(f_index + 1)
+      .map((e) => e.toLowerCase().split("="));
+    if (filobj) parsed = filter(filobj, parsed);
   }
 
   if (process.argv[2].toUpperCase().startsWith("A")) {
+    if (process.argv.includes("-h")) {
+      human = true;
+      human_msg = parsed.map((header) => human_str(header)).join("\n");
+    }
     if (
       log_to_file &&
-      last_parm_index &&
-      typeof process.argv[last_parm_index + 1] !== "undefined"
+      file_index &&
+      typeof process.argv[file_index] !== "undefined"
     )
       writeF(
         human
@@ -69,7 +67,7 @@ export default function cli() {
               null,
               2
             ),
-        process.argv[last_parm_index + 1]
+        process.argv[file_index]
       );
     else
       console.log(
@@ -158,10 +156,10 @@ export default function cli() {
 
   if (
     log_to_file &&
-    last_parm_index &&
-    typeof process.argv[last_parm_index + 1] !== "undefined"
+    file_index &&
+    typeof process.argv[file_index] !== "undefined"
   )
-    writeF(msg, process.argv[last_parm_index + 1]);
+    writeF(msg, process.argv[file_index]);
   else console.log(msg);
   return;
 }

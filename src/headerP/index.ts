@@ -8,7 +8,7 @@ import {
   fail,
   many,
 } from "../parser";
-import { filter, tag, taged_value, tcp_flagE, tcp_flagsM } from "./utils";
+import { tag, taged_value, tcp_flagE, tcp_flagsM } from "./utils";
 
 import ethernet_parser, { ethernet_result } from "./ethernetP";
 import http_formater from "./httpP";
