@@ -40,13 +40,16 @@ function layer_str(
       msg += "\n";
     } else {
       if (element.value === null) return;
-      msg +=
-        element.name +
-        ": " +
-        (!element.description || element.description === null
-          ? element.value.toString()
-          : element.description) +
-        "\n";
+      if (name === "http")
+        msg += (element.value as unknown as string[]).join("\n\t") + "\n";
+      else
+        msg +=
+          element.name +
+          ": " +
+          (!element.description || element.description === null
+            ? element.value.toString()
+            : element.description) +
+          "\n";
     }
   });
   return msg;
