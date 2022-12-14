@@ -10,42 +10,54 @@ export interface taged_value<T> {
 // HACK
 const reHexDigits = /^[0-9a-fA-F]+/;
 
-// TODO typer ça
 export function filter(o: string[][], data: header_type[]): any {
   let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp"];
-  let arg_parm: { [key: string]: (x: any, e: string) => boolean } = {
-    source_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[0] === e,
-    dest_ip: (x: any, e: string) => x[0].layers[1] && x[0].ip[1] === e,
-    ip: (x: any, e: string) =>
-      arg_parm.source_ip(x, e) || arg_parm.dest_ip(x, e),
-    source_mac: (x: any, e: string) => x[0].layers[1] && x[0].mac[0] === e,
-    dest_mac: (x: any, e: string) => x[0].layers[1] && x[0].mac[1] === e,
-    mac: (x: any, e: string) =>
-      arg_parm.dest_mac(x, e) || arg_parm.source_mac(x, e),
-    source_port: (x: any, e: string) => x[0].layers[2] && x[0].port[0] === e,
-    dest_port: (x: any, e: string) => x[0].layers[2] && x[0].port[1] === e,
-    port: (x: any, e: string) =>
+  let arg_parm: { [key: string]: (x: header_type, e: string) => boolean } = {
+    source_ip: (x, e) => Boolean(x[0].ip && x[0].ip[0] === e),
+    dest_ip: (x, e: string) => Boolean(x[0].ip && x[0].ip[1] === e),
+    ip: (x, e: string) => arg_parm.source_ip(x, e) || arg_parm.dest_ip(x, e),
+    source_mac: (x, e: string) => x[0].mac && x[0].mac[0] === e,
+    dest_mac: (x, e: string) => x[0].mac && x[0].mac[1] === e,
+    mac: (x, e: string) => arg_parm.dest_mac(x, e) || arg_parm.source_mac(x, e),
+    source_port: (x, e: string) => Boolean(x[0].port && x[0].port[0] === e),
+    dest_port: (x, e: string) => Boolean(x[0].port && x[0].port[1] === e),
+    port: (x, e: string) =>
       arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
-    index: (x: any, e: string) => x[0].index == e,
-    max_index: (x: any, e: string) => x[0].index <= e,
-    min_index: (x: any, e: string) => x[0].index >= e,
+    index: (x, e: string) => x[0].index?.toString() == e,
+    max_index: (x, e: string) => Number(x[0].index).toString() <= e,
+    min_index: (x, e: string) => Number(x[0].index).toString() >= e,
   };
 
-  for (const e of o)
-    for (let i = 0; i < data.length; )
+  for (const e of o) {
+    let length = data.length;
+    for (let i = 0; i < length; )
+      // si e[0] est un paramètre unique qui n'a pas besoin de valeur additionnel.
+      // Genre un protocole arp/ipv4/tcp
       if (cond_parm.includes(e[0]) && !data[i][0].layers.includes(e[0])) {
         data.splice(i, 1);
-      } else if (
+        length--;
+      }
+      // si e[0] est un paramètre qui a besoin d'un second paramètre
+      // typiquement ip/port/mac/index
+      else if (
         e[0] in arg_parm &&
         typeof e[1] !== "undefined" &&
         !arg_parm[e[0]](data[i], e[1])
       ) {
         data.splice(i, 1);
-      } else if (e[0] in tcp_flagsM && !(e[0] in data[i][0].tcp_flags)) {
-        data.splice(i, 1);
-      } else {
-        i++;
+        length--;
       }
+      // si e[0] est un flag TCP
+      else if (
+        e[0] in tcp_flagE &&
+        !data[i][0].tcp_flags.includes(
+          tcp_flagE[e[0] as any] as unknown as tcp_flagE
+        )
+      ) {
+        data.splice(i, 1);
+        length--;
+      } else i++;
+  }
 
   return data;
 }
@@ -116,6 +128,7 @@ export const tcp_flagsM: tcp_flagE[] = [
   tcp_flagE.ece,
   tcp_flagE.urg,
   tcp_flagE.ack,
+  tcp_flagE.psh,
   tcp_flagE.rst,
   tcp_flagE.syn,
   tcp_flagE.fin,
