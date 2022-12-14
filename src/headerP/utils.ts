@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "fs";
-import { header_type, IPLayerT, ethernet_result, TCPLayerT, filter_dict } from ".";
+import { header_type, IPLayerT, ethernet_result, TCPLayerT, filter_dict, tcp_result } from ".";
 
 export interface taged_value<T> {
   name: string;
@@ -118,6 +118,52 @@ export function human_str(data: header_type): string {
 
   return msg;
 }
+
+export function to_arrow(
+  filtD: filter_dict | undefined,
+  tcp_layer?: TCPLayerT | null
+): string {
+  if (!filtD || !filtD.layers) return "no data parsed";
+
+  let index = filtD.index ? filtD.index.toString().padStart(3, "0") : 0;
+
+  let source_mac = filtD.mac[0];
+  let dest_mac = filtD.mac[1];
+
+  if (!filtD.layers[1] || !filtD.ip)
+    return `${index}: ${source_mac} ---> ${dest_mac} : Insuported Internet layer`;
+
+  let ip_source: string = "";
+  let ip_dest: string = "";
+
+  if ((filtD.layers[1] === "ipv4" || filtD.layers[1] === "ipv6") && filtD.ip) {
+    ip_source = filtD.ip[0].padStart(15);
+    ip_dest = filtD.ip[1].padStart(15);
+  } else if (filtD.layers[1] === "arp" && filtD.ip[3]) {
+    let sourceh = filtD.ip[0].padStart(15);
+    let sourcep = filtD.ip[1].padStart(15);
+    let destp = filtD.ip[3].padStart(15);
+    return `${sourcep} -->    BROADCAST    : who has ${destp}? tell ${sourceh}`;
+  }
+
+  if (filtD.layers[2] !== "tcp" || !filtD.port)
+    return `${index}: ${ip_source} --> ${ip_dest} : Unsuported Transport layer`;
+
+  let tcp_frame = tcp_layer as tcp_result | null | undefined;
+
+  let source_port = filtD.port[0].padStart(6);
+  let dest_port = filtD.port[1].padStart(6);
+
+  let act_flags = filtD.tcp_flags.map((x) => tcp_flagE[x].toUpperCase());
+
+  let seq_N = tcp_frame ? tcp_frame[2].value : "unknown";
+  let ack_N = tcp_frame ? tcp_frame[3].value : "unknown";
+
+  return `${index}: ${ip_source} --> ${ip_dest} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
+    ", "
+  )} ] Seq=${seq_N} Ack=${ack_N}`;
+}
+
 
 export const convertToBin = (data: string): Uint8Array => {
   if (!reHexDigits.test(data))

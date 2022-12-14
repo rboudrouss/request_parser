@@ -24,13 +24,11 @@ export * from "./tcpP";
 const toStringNumL = (l: number[]) => l.map((e) => e.toString()).join(",");
 
 export interface filter_dict {
-  mac: [string | null, string | null];
+  mac: [string, string];
   tcp_flags: tcp_flagE[];
   layers: [string | null, string | null, string | null, string | null];
-  ip?:
-    | [string | null, string | null]
-    | [string | null, string | null, string | null, string | null];
-  port?: [string | null, string | null];
+  ip?: [string, string] | [string, string, string, string];
+  port?: [string, string];
   http?: true;
   index?: number;
 }
@@ -56,7 +54,10 @@ const header_parser = coroutine((run): header_type => {
   let size = 0;
   let protocol = -1;
   let filter_info: filter_dict = {
-    mac: [ethernet_frame[1].description, ethernet_frame[0].description],
+    mac: [
+      ethernet_frame[1].description as string,
+      ethernet_frame[0].description as string,
+    ],
     layers: ["ethernet", null, null, null],
     tcp_flags: [],
   };
@@ -68,14 +69,20 @@ const header_parser = coroutine((run): header_type => {
     ip_frame = run(ip4h_parser);
     protocol = ip_frame[9].value;
     size = ip_frame[4].value;
-    filter_info["ip"] = [ip_frame[11].description, ip_frame[12].description];
+    filter_info["ip"] = [
+      ip_frame[11].description as string,
+      ip_frame[12].description as string,
+    ];
     filter_info.layers[1] = "ipv4";
   } else if (ethernet_frame[2].value === 0x86dd) {
     // protocol is ipv6
     ip_frame = run(ip6h_parser);
     protocol = ip_frame[4].value;
     size = ip_frame[3].value;
-    filter_info["ip"] = [ip_frame[6].description, ip_frame[7].description];
+    filter_info["ip"] = [
+      ip_frame[6].description as string,
+      ip_frame[7].description as string,
+    ];
     filter_info.layers[1] = "ipv6";
   } else if (ethernet_frame[2].value === 0x0806) {
     // protocol is ARP
@@ -86,10 +93,10 @@ const header_parser = coroutine((run): header_type => {
     let destp = ip_frame[8];
     if (ip_frame[0].value == 1 && ip_frame[1].value === 0x800)
       filter_info["ip"] = [
-        sourceh.description,
-        sourcep.description,
-        desth.description,
-        destp.description,
+        sourceh.description as string,
+        sourcep.description as string,
+        desth.description as string,
+        destp.description as string,
       ];
     else
       filter_info["ip"] = [
@@ -176,13 +183,11 @@ const header_parser = coroutine((run): header_type => {
   ];
 });
 
-
-export const header_parsers = many(header_parser)
-    .map((x) =>
-      x.map((e, i) => {
-        e[0].index = i;
-        return e;
-      })
-    )
+export const header_parsers = many(header_parser).map((x) =>
+  x.map((e, i) => {
+    e[0].index = i;
+    return e;
+  })
+);
 
 export default header_parser;

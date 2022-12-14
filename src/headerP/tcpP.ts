@@ -1,7 +1,7 @@
 import Parser, { Bit, sequence, succeed, tup, Uint, Zero } from "../parser";
 import { tag, taged_value } from "./utils";
 
-type tcp_result = [
+export type tcp_result = [
   taged_value<number>,
   taged_value<number>,
   taged_value<number>,

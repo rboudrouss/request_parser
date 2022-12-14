@@ -1,17 +1,12 @@
 import { exit } from "process";
 import {
-  ethernet_result,
   filter,
   filter_dict,
   header_parsers,
-  header_type,
   human_str,
-  IPLayerT,
   readF,
-  taged_value,
   TCPLayerT,
-  tcp_flagE,
-  tcp_flagsM,
+  to_arrow,
   writeF,
 } from "./headerP";
 
@@ -82,77 +77,7 @@ export default function cli() {
     return;
   }
 
-  let msg = parsed
-    .map((l) => {
-      if (!l || !l[0] || !l[1]) return "no data parsed";
-
-      let filter_info = l[0];
-
-      let index = filter_info.index
-        ? filter_info.index.toString().padStart(3, "0")
-        : 0;
-
-      let ethernet_frame: {
-        name: string;
-        value: number | number[];
-        description: string;
-      }[] = l[1] as any;
-
-      let source_mac = ethernet_frame[1].description;
-      let dest_mac = ethernet_frame[0].description;
-
-      if (!l[2])
-        return `${index}: ${source_mac} ---> ${dest_mac} : Insuported Internet layer (not ipv4)`;
-
-      let ip_frame: {
-        name: string;
-        value: number | number[];
-        description: string;
-      }[] = l[2] as any;
-
-      let ip_source: string = "";
-      let ip_dest: string = "";
-
-      if (filter_info.layers[1] === "ipv4") {
-        ip_source = ip_frame[11].description.padStart(15);
-        ip_dest = ip_frame[12].description.padStart(15);
-      } else if (filter_info.layers[1] == "ipv6") {
-        ip_source = ip_frame[7].description.padStart(15);
-        ip_dest = ip_frame[8].description.padStart(15);
-      } else if (filter_info.layers[1] === "arp") {
-        let sourceh = ip_frame[5].description.padStart(15);
-        let sourcep = ip_frame[6].description.padStart(15);
-        let destp = ip_frame[8].description.padStart(15);
-        return `${sourcep} -->    BROADCAST    : who has ${destp}? tell ${sourceh}`;
-      }
-
-      if (!l[3])
-        return `${index}: ${ip_source} --> ${ip_dest} : Unsuported Transport layer (not tcp)`;
-
-      let tcp_layer: {
-        name: string;
-        value: number | number[];
-        description: string;
-      }[] = l[3] as any;
-
-      let tcp_flags: {
-        name: string;
-        value: number | number[];
-        description: string;
-      }[] = (tcp_layer[6].value as any).map((e: any) => e.value);
-
-      let act_flags: string[] = [];
-      for (let i = 0; i < tcp_flagsM.length; i++)
-        if (tcp_flags[i]) act_flags.push(tcp_flagE[tcp_flagsM[i]]);
-
-      let source_port = tcp_layer[0].value.toString().padStart(6);
-      let dest_port = tcp_layer[1].value.toString().padStart(6);
-
-      return `${index}: ${ip_source} --> ${ip_dest} : ${source_port} -----> ${dest_port} : [ ${act_flags.join(
-        ", "
-      )} ] Seq=${tcp_layer[2].value} Ack=${tcp_layer[3].value}`;
-    })
-    .join("\n");
+  let msg = parsed.map((l) => to_arrow(l[0], l[3])).join("\n");
 
   if (
     log_to_file &&
