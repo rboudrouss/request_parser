@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { readFileSync, writeFileSync } from "fs";
-=======
->>>>>>> f59150d (doesn't like node thingis)
 import {
   header_type,
   filter_dict,
@@ -44,10 +39,7 @@ export interface taged_value<T> {
   value: T;
   description: string | null;
 }
-=======
->>>>>>> 6858648 (get reacted)
-
-// HACK repeated regex, found in parser/ too
+// HACK
 const reHexDigits = /^[0-9a-fA-F]+/;
 
 export type toArrowT = (
@@ -221,26 +213,6 @@ export const cleanInput = (data: string): string => {
     .replace(/\s/g, "");
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-// Use it only if executed by <ts->node <!>
-export const readF = (s: string): Uint8Array => {
-  return convertToBin(cleanInput(readFileSync(s).toString()));
-};
-
-export const writeBinF = (data: Uint8Array, s: string): void => {
-  let dataView = new DataView(data.buffer);
-  writeFileSync(s, dataView, "binary");
-};
-
-export const writeF = (data: string, s: string): void => {
-  writeFileSync(s, data);
-};
-
-=======
->>>>>>> 6858648 (get reacted)
-=======
->>>>>>> f59150d (doesn't like node thingis)
 export const tag =
   <T>(name: string, descFN?: (x: T) => string) =>
   (value: T): taged_value<T> => {
