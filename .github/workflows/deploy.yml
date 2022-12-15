@@ -35,7 +35,7 @@ jobs:
         run: yarn
 
       - name: build site
-        run: yarn run build
+        run: CI= yarn run build
 
       - name: Deploy
         uses: crazy-max/ghaction-github-pages@v1
