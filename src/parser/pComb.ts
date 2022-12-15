@@ -5,7 +5,8 @@ import ParserState from "./pState";
 export const sequence = <R extends any[], D>(parsers: ParserTuple<R, D>) =>
   new Parser((s) => {
     if (s.error) return s;
-    const results = [];
+    const results: any[] = [];
+    // HACK
     let nextState = s;
 
     for (const parser of parsers) {
@@ -21,7 +22,8 @@ export const many = function many<T>(parser: Parser<T>): Parser<T[]> {
   return new Parser(function many$state(state) {
     if (state.isError) return state;
 
-    const results = [];
+    // HACK
+    const results: any[] = [];
     let nextState = state;
 
     while (true) {
