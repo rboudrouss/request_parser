@@ -1,5 +1,7 @@
 # projet de réseaux
 
+## Boudrouss Réda 28712638
+
 ## Input
 
 must take in input a hex dup + offset and interpretation of the packets. (see `src/data/txt/` for examples)
@@ -15,7 +17,7 @@ Pour excecuter notre code vous avez 2 choix :
 
 Mais dans les 2 cas, on aura besoin de l'interpréteur javacript `node.js` à installer ici: https://nodejs.org/en/ (ou avec pour packet manager)
 
-### Méthode facile
+## CLI
 
 Récupérer la dernière version dans l'onglet release sur github (Pour le correcteur c'est déjà forni dans le dossier `build/`).
 
