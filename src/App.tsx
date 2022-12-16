@@ -8,7 +8,7 @@ import {
 } from "./headerP";
 
 function App() {
-  let [data, setData] = useState("");
+  // let [data, setData] = useState("");
   let [read, setRead] = useState(false);
   let [result, setResult] = useState<header_type[] | null>(null);
   console.log("app is weady uwu");
@@ -18,7 +18,7 @@ function App() {
     e.preventDefault();
     const reader = new FileReader();
     reader.onload = async (e) => {
-      setData(e.target?.result as string);
+      // setData(e.target?.result as string);
       let parsed = header_parsers.run(
         convertToBin(cleanInput(e.target?.result as string))
       );
