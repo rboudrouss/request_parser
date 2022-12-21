@@ -54,9 +54,9 @@ export function filter(o: string[][], data: header_type[]): any {
     dest_port: (x, e: string) => Boolean(x[0].port && x[0].port[1] === e),
     port: (x, e: string) =>
       arg_parm.source_port(x, e) || arg_parm.dest_port(x, e),
-    index: (x, e: string) => x[0].index?.toString() == e,
-    max_index: (x, e: string) => Number(x[0].index).toString() <= e,
-    min_index: (x, e: string) => Number(x[0].index).toString() >= e,
+    index: (x, e: string) => x[0].index === Number(e),
+    max_index: (x, e: string) => (x[0].index ? x[0].index <= Number(e) : true),
+    min_index: (x, e: string) => (x[0].index ? x[0].index >= Number(e) : true),
   };
 
   for (const e of o) {
@@ -155,7 +155,7 @@ export function to_arrow(
 ): string {
   if (!filtD || !filtD.layers) return "no data parsed";
 
-  let index = filtD.index ? filtD.index.toString().padStart(3, "0") : 0;
+  let index = filtD.index ? filtD.index.toString().padStart(3, "0") : "000";
 
   let source_mac = filtD.mac[0];
   let dest_mac = filtD.mac[1];
@@ -173,7 +173,7 @@ export function to_arrow(
     let sourceh = filtD.ip[0].padStart(15);
     let sourcep = filtD.ip[1].padStart(15);
     let destp = filtD.ip[3].padStart(15);
-    return `${sourcep} -->    BROADCAST    : who has ${destp}? tell ${sourceh}`;
+    return `${index}: ${sourcep} -->    BROADCAST    : who has ${destp}? tell ${sourceh}`;
   }
 
   if (filtD.layers[2] !== "tcp" || !filtD.port)
