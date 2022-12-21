@@ -7,6 +7,19 @@ import {
   filter_dict,
   tcp_result,
 } from ".";
+import {
+  char,
+  choice,
+  endOfInput,
+  everyCharUntil,
+  many,
+  many1,
+  possibly,
+  regex,
+  sequence,
+  tup,
+  whitespace,
+} from "../parser";
 
 export enum tcp_flagE {
   "ns",
@@ -40,6 +53,34 @@ export interface taged_value<T> {
 
 // HACK
 const reHexDigits = /^[0-9a-fA-F]+/;
+
+export type parsed_Frame = [
+  string,
+  string,
+  string | null,
+  string,
+  string | null
+];
+
+export const InputFrameParser = many1<parsed_Frame>(
+  sequence(
+    tup(
+      regex(reHexDigits),
+      many1(sequence(tup(whitespace, regex(reHexDigits)))).map((res) =>
+        res.map((e) => e[1]).join("")
+      ),
+      possibly(whitespace),
+      everyCharUntil(choice(tup(char("\n"), endOfInput))),
+      choice(tup(char("\n"), endOfInput))
+    )
+  )
+);
+
+export const inputFramesParser = many(
+  sequence<[parsed_Frame[], string | null], null>(
+    tup(InputFrameParser, possibly(char("\n")))
+  )
+);
 
 export function filter(o: string[][], data: header_type[]): any {
   let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp"];
@@ -210,12 +251,18 @@ export const convertToBin = (data: string): Uint8Array => {
 };
 
 // cleaning the offset, the hex-visualisation, and the spaces
-export const cleanInput = (data: string): string => {
-  return data
-    .split("\n")
-    .map((s) => s.slice(5, Math.min(s.length, 54)))
-    .join("")
-    .replace(/\s/g, "");
+export const cleanInput = (data: string) => {
+  let result = inputFramesParser.run(data);
+
+  if (result.isError) {
+    console.log(result);
+    throw new Error(result.error as string);
+  }
+
+  let unwraped = result.result.map((x) => x[0].map((frame) => frame[1]));
+  let out: string[] = [];
+  for (let a in unwraped) out = [...out, ...unwraped[a]];
+  return out.join("");
 };
 
 // Use it only if executed by <ts->node <!>

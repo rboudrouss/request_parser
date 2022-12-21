@@ -1,5 +1,6 @@
 import Parser, { ParserTuple } from "./parser";
 import ParserState from "./pState";
+import { decoder } from "./utils";
 
 /** Takes an array of parsers, and returns a new parser that matches each of them sequentially, collecting up the results into an array. */
 export const sequence = <R extends any[], D>(parsers: ParserTuple<R, D>) =>
@@ -26,6 +27,7 @@ export const many = function many<T>(parser: Parser<T>): Parser<T[]> {
 
     while (true) {
       const out = parser.pf(nextState);
+      console.log(out.index)
 
       if (out.isError) {
         break;
@@ -87,3 +89,74 @@ export function coroutine<T>(parserFn: ParserFn<T>): Parser<T> {
     }
   });
 }
+
+export const many1 = function many1<T>(parser: Parser<T>): Parser<T[]> {
+  return new Parser(function many1$state(state) {
+    if (state.isError) return state;
+
+    const resState = many(parser).pf(state);
+    if (resState.result.length) return resState;
+
+    return state.updateError(
+      `ParseError 'many1' (position ${state.index}): Expecting to match at least one value`
+    );
+  });
+};
+
+export function everythingUntil(parser: Parser<any>): Parser<number[]> {
+  return new Parser((state) => {
+    if (state.isError) return state;
+
+    const results = [];
+    let nextState = state;
+
+    while (true) {
+      const out = parser.pf(nextState);
+
+      if (out.isError) {
+        const { index, dataView } = nextState;
+
+        if (dataView.byteLength <= index) {
+          return nextState.updateError(
+            `ParseError 'everythingUntil' (position ${nextState.index}): Unexpected end of input.`
+          );
+        }
+
+        const val = dataView.getUint8(index);
+        if (val) {
+          results.push(val);
+          nextState = nextState.updateByteIndex(1).updateResult(val);
+        }
+      } else {
+        break;
+      }
+    }
+
+    return nextState.updateResult(results);
+  });
+}
+// TODO type return type
+export const choice = <R extends any[], D>(parsers: ParserTuple<R, D>) => {
+  if (parsers.length === 0) throw new Error(`List of parsers can't be empty.`);
+
+  return new Parser(function choice$state(state) {
+    if (state.isError) return state;
+
+    let error = null;
+    for (const parser of parsers) {
+      const out = parser.pf(state);
+
+      if (!out.isError) return out;
+
+      if (error === null || (error && out.index > error.index)) {
+        error = out;
+      }
+    }
+
+    return error as ParserState<any, any>;
+  });
+};
+
+export const everyCharUntil = (parser: Parser<any>) => everythingUntil(parser)
+  .map(results => decoder.decode(Uint8Array.from(results)));
+
