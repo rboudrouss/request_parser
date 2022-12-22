@@ -68,6 +68,22 @@ const tcp_parser = sequence(
 });
 
 export default tcp_parser;
+export type udp_result = [
+  taged_value<number>,
+  taged_value<number>,
+  taged_value<number>,
+  taged_value<number>,
+]
+
+export const udp_parser = sequence<udp_result, unknown>(
+  tup(
+    Uint(16).map(tag("Source Port")),
+    Uint(16).map(tag("dest port")),
+    Uint(16).map(tag("Longueur")),
+    Uint(16).map(tag("Somme de contrôle"))
+  )
+)
+
 
 export type icmp_result = [
   taged_value<number>,
@@ -102,4 +118,4 @@ export const icmp_parser = sequence<icmp_result, unknown>(
   )
 );
 
-export type TCPLayerT = tcp_result | icmp_result;
+export type TCPLayerT = tcp_result | icmp_result | udp_result;

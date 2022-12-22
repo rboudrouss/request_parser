@@ -13,7 +13,7 @@ import { tag, taged_value, tcp_flagE, tcp_flagsM } from "./utils";
 import ethernet_parser, { ethernet_result } from "./ethernetP";
 import http_formater from "./httpP";
 import ip4h_parser, { ARP_parser, ip6h_parser, IPLayerT } from "./ipP";
-import tcp_parser, { icmp_parser, TCPLayerT } from "./tcpP";
+import tcp_parser, { icmp_parser, TCPLayerT, udp_parser } from "./tcpP";
 
 export * from "./utils";
 export * from "./ipP";
@@ -111,6 +111,7 @@ const header_parser = coroutine((run): header_type => {
     run(fail("header_parser: Unsupported Internet protocol"));
   }
   if (protocol === 0x6) {
+    // TCP
     tcp_frame = run(tcp_parser);
     is_http = tcp_frame[0].value === 80 || tcp_frame[1].value === 80;
     filter_info["port"] = [
@@ -123,8 +124,16 @@ const header_parser = coroutine((run): header_type => {
     for (let i = 0; i < tcp_flagsM.length; i++)
       if (tcp_flags[i] === 1) filter_info.tcp_flags.push(tcp_flagsM[i]);
   } else if (protocol === 0x1) {
+    //ICMP
     tcp_frame = run(icmp_parser);
     filter_info.layers[2] = "icmp";
+  } else if (protocol === 0x11) {
+    tcp_frame = run(udp_parser);
+    filter_info.layers[2] = "udp";
+    filter_info["port"] = [
+      tcp_frame[0].value.toString(),
+      tcp_frame[1].value.toString(),
+    ];
   }
 
   unknown_data = run(

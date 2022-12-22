@@ -6,6 +6,7 @@ import {
   TCPLayerT,
   filter_dict,
   tcp_result,
+  udp_result,
 } from ".";
 
 export enum tcp_flagE {
@@ -42,7 +43,7 @@ export interface taged_value<T> {
 const reHexDigits = /^[0-9a-fA-F]+/;
 
 export function filter(o: string[][], data: header_type[]): any {
-  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp"];
+  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp", "udp"];
   let arg_parm: { [key: string]: (x: header_type, e: string) => boolean } = {
     source_ip: (x, e) => Boolean(x[0].ip && x[0].ip[0] === e),
     dest_ip: (x, e: string) => Boolean(x[0].ip && x[0].ip[1] === e),
@@ -176,13 +177,16 @@ export function to_arrow(
     return `${index}: ${sourcep} -->    BROADCAST    : who has ${destp}? tell ${sourceh}`;
   }
 
-  if (filtD.layers[2] !== "tcp" || !filtD.port)
+  if (!(filtD.layers[2] === "udp" || filtD.layers[2] === "tcp") || !filtD.port)
     return `${index}: ${ip_source} --> ${ip_dest} : Unsuported Transport layer`;
-
+  
   let tcp_frame = tcp_layer as tcp_result | null | undefined;
 
   let source_port = filtD.port[0].padStart(6);
   let dest_port = filtD.port[1].padStart(6);
+
+  if (filtD.layers[2] === "udp")
+    return `${index}: ${ip_source} --> ${ip_dest} : ${source_port} -----> ${dest_port} : UDP`
 
   let act_flags = filtD.tcp_flags.map((x) => tcp_flagE[x].toUpperCase());
 
