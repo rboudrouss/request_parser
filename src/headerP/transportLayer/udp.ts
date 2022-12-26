@@ -25,11 +25,16 @@ export const udpInfo = (frame: udpType): transportInfo => {
   };
 };
 
+export const udpToMsg = (frame: udpType): string => {
+  const { sourceP, destP } = udpInfo(frame);
+  return `${sourceP.padStart(5, " ")} -----> ${destP.padStart(5, " ")} : UDP`;
+};
+
 const udpComp: transportComp<udpType> = {
   name: "udp",
   infoF: udpInfo,
   parser: udpParser,
-  toMsg: () => "UDP",
+  toMsg: udpToMsg,
 };
 
 export default udpComp;
