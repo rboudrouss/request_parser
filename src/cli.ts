@@ -48,7 +48,7 @@ export default function cli() {
     return;
   }
 
-  let msg = parsed.map((l) => to_arrow(l[0], l[3])).join("\n");
+  let msg = parsed.map((l) => to_arrow(l[0])).join("\n");
 
   if (file_index && typeof process.argv[file_index] !== "undefined")
     writeF(msg, process.argv[file_index]);

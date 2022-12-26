@@ -1,7 +1,8 @@
-import Parser, { Bit, sequence, succeed, tup, Uint, Zero } from "../parser";
-import { tag, taged_value } from "./utils";
+import { taged_value, tag, tcp_flagsM, tcp_flagE } from "../utils";
+import Parser, { sequence, tup, Uint, Zero, Bit, succeed } from "../../parser";
+import { transportComp, transportInfo } from "./utils";
 
-export type tcp_result = [
+export type tcpType = [
   taged_value<number>,
   taged_value<number>,
   taged_value<number>,
@@ -27,7 +28,7 @@ export type tcp_result = [
   taged_value<number[]> | null
 ];
 
-const tcp_parser = sequence(
+export const tcpParser = sequence(
   tup(
     Uint(16).map(tag("Source Port")), // source port
     Uint(16).map(tag("Destination Port")), // dest port
@@ -55,7 +56,7 @@ const tcp_parser = sequence(
     Uint(16).map(tag("CheckSum")), // Checksum
     Uint(16).map(tag("Urgen Pointer")) // urgent pointer
   )
-).chain((x): Parser<tcp_result> => {
+).chain((x): Parser<tcpType> => {
   // Unsuported TCP options
   if (x && x[4].value > 5) {
     return sequence(
@@ -67,55 +68,36 @@ const tcp_parser = sequence(
   return succeed([...x, null]);
 });
 
-export default tcp_parser;
-export type udp_result = [
-  taged_value<number>,
-  taged_value<number>,
-  taged_value<number>,
-  taged_value<number>,
-]
+export const tcpInfo = (frame: tcpType): transportInfo => {
+  let out = [];
+  let tcp_flags = frame[6].value.map((e) => e.value);
+  for (let i = 0; i < tcp_flagsM.length; i++)
+    if (tcp_flags[i] === 1) out.push(tcp_flagsM[i]);
+  return {
+    sourceP: frame[0].value.toString(),
+    destP: frame[1].value.toString(),
+    flags: out,
+  };
+};
 
-export const udp_parser = sequence<udp_result, unknown>(
-  tup(
-    Uint(16).map(tag("Source Port")),
-    Uint(16).map(tag("dest port")),
-    Uint(16).map(tag("Longueur")),
-    Uint(16).map(tag("Somme de contrôle"))
-  )
-)
+export const tcpToArrow = (frame: tcpType) => {
+  const { sourceP, destP, flags } = tcpInfo(frame);
 
+  let act_flags = flags ? flags.map((x) => tcp_flagE[x].toUpperCase()) : [];
 
-export type icmp_result = [
-  taged_value<number>,
-  taged_value<number>,
-  taged_value<number>
-];
+  let seq_N = frame[2].value;
+  let ack_N = frame[3].value;
 
-export const icmp_parser = sequence<icmp_result, unknown>(
-  tup(
-    Uint(8).map(
-      tag("Type", (x) => {
-        return (
-          {
-            0: "echo reply",
-            3: "destionation unreachable",
-            5: "redirect message",
-            8: "echo request",
-            9: "router advertisement",
-            10: "router solicitation",
-            11: "time exceeded",
-            12: "bad ip header",
-            13: "timestamp",
-            14: "timestamp reply",
-            42: "extended echo request",
-            43: "extended echo reply",
-          }[x] ?? "unknown"
-        );
-      })
-    ),
-    Uint(8).map(tag("code")),
-    Uint(32).map(tag("rest of header"))
-  )
-);
+  return `${sourceP.padStart(5, " ")} -----> ${destP.padStart(5, " ")} : [ ${act_flags.join(
+    ", "
+  )} ] Seq=${seq_N} Ack=${ack_N}`;
+};
 
-export type TCPLayerT = tcp_result | icmp_result | udp_result;
+const tcpComp: transportComp<tcpType> = {
+  name: "tcp",
+  parser: tcpParser,
+  infoF: tcpInfo,
+  toMsg: tcpToArrow,
+};
+
+export default tcpComp;

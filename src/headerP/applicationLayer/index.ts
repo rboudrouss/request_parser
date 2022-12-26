@@ -1,3 +1,5 @@
+// HACK on hardcode pour l'instant le http le temps de trouver une solution pour généraliser ça
+
 // FIXME make it detected better
 const http_formater = (data: string): string[] => {
   if (!data) return [data];

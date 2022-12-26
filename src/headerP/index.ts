@@ -8,36 +8,35 @@ import {
   fail,
   many,
 } from "../parser";
-import { tag, taged_value, tcp_flagE, tcp_flagsM } from "./utils";
-
-import ethernet_parser, { ethernet_result } from "./ethernetP";
-import http_formater from "./httpP";
-import ip4h_parser, { ARP_parser, ip6h_parser, IPLayerT } from "./ipP";
-import tcp_parser, { icmp_parser, TCPLayerT, udp_parser } from "./tcpP";
+import http_formater from "./applicationLayer";
+import internetDictParser, { InternetType } from "./internetLayer";
+import ethernetParser, { ethernetType } from "./physicalLayer/ethernet";
+import transportDictParser, { TransportType } from "./transportLayer";
+import { defaultToArrow, filter, tag, taged_value, tcp_flagE, tcp_flagsM } from "./utils";
 
 export * from "./utils";
-export * from "./ipP";
-export * from "./ethernetP";
-export * from "./httpP";
-export * from "./tcpP";
-
-const toStringNumL = (l: number[]) => l.map((e) => e.toString()).join(",");
+export * from "./basicP";
+export * from "./applicationLayer";
+export * from "./physicalLayer";
+export * from "./internetLayer";
+export * from "./transportLayer";
 
 export interface filter_dict {
   mac: [string, string];
-  tcp_flags: tcp_flagE[];
   layers: [string | null, string | null, string | null, string | null];
+  msg?: string;
   ip?: [string, string] | [string, string, string, string];
   port?: [string, string];
   http?: true;
   index?: number;
+  tcp_flags?: tcp_flagE[];
 }
 
 export type header_type = [
   filter_dict,
-  ethernet_result,
-  IPLayerT | null,
-  TCPLayerT | null,
+  ethernetType,
+  InternetType | null,
+  TransportType | null,
   [taged_value<string[] | null>],
   [taged_value<string> | null]
 ];
@@ -45,14 +44,14 @@ export type header_type = [
 // TODO make this code cleaner / find a better way
 // TODO fait trop à la va vite, ce code est vraiment pas propre
 const header_parser = coroutine((run): header_type => {
-  let ethernet_frame = run(ethernet_parser);
-  let ip_frame: IPLayerT | null = null;
-  let tcp_frame: TCPLayerT | null = null;
+  let ethernet_frame = run(ethernetParser);
+  let internetL: InternetType | null = null;
+  let transportL: TransportType | null = null;
   let is_http = false;
   let unknown_data: taged_value<string[] | null> | null = null;
   let peek: taged_value<string> | null = null;
   let size = 0;
-  let protocol = -1;
+  let protocol: number | undefined = undefined;
   let filter_info: filter_dict = {
     mac: [
       ethernet_frame[1].description as string,
@@ -64,76 +63,42 @@ const header_parser = coroutine((run): header_type => {
 
   const { index } = run(getIndex);
 
-  if (ethernet_frame[2].value === 0x800) {
-    // protocol is ipv4
-    ip_frame = run(ip4h_parser);
-    protocol = ip_frame[9].value;
-    size = ip_frame[4].value;
-    filter_info["ip"] = [
-      ip_frame[11].description as string,
-      ip_frame[12].description as string,
-    ];
-    filter_info.layers[1] = "ipv4";
-  } else if (ethernet_frame[2].value === 0x86dd) {
-    // protocol is ipv6
-    ip_frame = run(ip6h_parser);
-    protocol = ip_frame[4].value;
-    size = ip_frame[3].value;
-    filter_info["ip"] = [
-      ip_frame[6].description as string,
-      ip_frame[7].description as string,
-    ];
-    filter_info.layers[1] = "ipv6";
-  } else if (ethernet_frame[2].value === 0x0806) {
-    // protocol is ARP
-    ip_frame = run(ARP_parser);
-    let sourceh = ip_frame[5];
-    let sourcep = ip_frame[6];
-    let desth = ip_frame[7];
-    let destp = ip_frame[8];
-    if (ip_frame[0].value === 1 && ip_frame[1].value === 0x800)
-      filter_info["ip"] = [
-        sourceh.description as string,
-        sourcep.description as string,
-        desth.description as string,
-        destp.description as string,
-      ];
-    else
-      filter_info["ip"] = [
-        toStringNumL(sourcep.value),
-        toStringNumL(destp.value),
-        toStringNumL(sourceh.value),
-        toStringNumL(desth.value),
-      ];
-    filter_info.layers[1] = "arp";
-  } else {
+  let ethertype = ethernet_frame[2].value;
+
+  let internetComp = internetDictParser[ethertype];
+  if (!internetComp) {
     console.log("Error, Internet protocol not supported. Cannot continue");
     run(fail("header_parser: Unsupported Internet protocol"));
   }
-  if (protocol === 0x6) {
-    // TCP
-    tcp_frame = run(tcp_parser);
-    is_http = tcp_frame[0].value === 80 || tcp_frame[1].value === 80;
-    filter_info["port"] = [
-      tcp_frame[0].value.toString(),
-      tcp_frame[1].value.toString(),
-    ];
-    filter_info.layers[2] = "tcp";
 
-    let tcp_flags = tcp_frame[6].value.map((e) => e.value);
-    for (let i = 0; i < tcp_flagsM.length; i++)
-      if (tcp_flags[i] === 1) filter_info.tcp_flags.push(tcp_flagsM[i]);
-  } else if (protocol === 0x1) {
-    //ICMP
-    tcp_frame = run(icmp_parser);
-    filter_info.layers[2] = "icmp";
-  } else if (protocol === 0x11) {
-    tcp_frame = run(udp_parser);
-    filter_info.layers[2] = "udp";
-    filter_info["port"] = [
-      tcp_frame[0].value.toString(),
-      tcp_frame[1].value.toString(),
-    ];
+  let { name, parser, infoF, canHaveLayer, toMsg } = internetComp;
+  internetL = run(parser);
+  let info = infoF(internetL);
+  size = info.size;
+  protocol = info.protocol;
+  filter_info.ip = [info.sourceIP, info.destIP];
+  filter_info.layers[1] = name;
+  filter_info.msg = toMsg ? toMsg(internetL) : undefined;
+
+  if (canHaveLayer && protocol) {
+    let transportComp = transportDictParser[protocol];
+    if (transportComp) {
+      let { name, parser, infoF, toMsg } = transportComp;
+      transportL = run(parser);
+      filter_info.layers[2] = name;
+      let info = infoF(transportL);
+      if (info) {
+        filter_info["port"] = [info.sourceP, info.destP];
+        filter_info.tcp_flags = info.flags ? [...info.flags] : undefined;
+        is_http = name === 'tcp' && (Number(info.sourceP) === 80 || Number(info.destP) === 80)
+      } else
+        console.log(
+          "gotta need to implemente more info of the ",
+          name,
+          " protocol"
+        );
+      filter_info.msg = toMsg ? toMsg(transportL) : undefined
+    } else console.log("Not supported transport layer");
   }
 
   unknown_data = run(
@@ -180,13 +145,14 @@ const header_parser = coroutine((run): header_type => {
         } as taged_value<string[]>)
       : unknown_data;
 
-    return [filter_info, ethernet_frame, ip_frame, tcp_frame, [data], [peek]];
+    return [filter_info, ethernet_frame, internetL, transportL, [data], [peek]];
   }
+
   return [
     filter_info,
     ethernet_frame,
-    ip_frame,
-    tcp_frame,
+    internetL,
+    transportL,
     [unknown_data],
     [peek],
   ];

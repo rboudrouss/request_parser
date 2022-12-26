@@ -2,8 +2,9 @@ import { sequence, Uint, tup } from "../parser";
 import { tag } from "./utils";
 
 export const macToStr = (mac: number[]): string => {
-  const hexMac = mac.map((dec) => dec.toString(16));
-  return hexMac.join("-");
+  const hexMac = mac.map((dec) => dec.toString(16)).join("-");
+  if (hexMac === "ff-ff-ff-ff-ff-ff") return "BROADCAST";
+  return hexMac;
 };
 
 export const ip4ToString = (ip: number[]): string => ip.join(".");
