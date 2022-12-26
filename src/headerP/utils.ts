@@ -38,7 +38,7 @@ export interface taged_value<T> {
   description: string | null;
 }
 
-// HACK
+// HACK repeated regex, found in parser/ too
 const reHexDigits = /^[0-9a-fA-F]+/;
 
 export type toArrowT = (
