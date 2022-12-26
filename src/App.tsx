@@ -15,7 +15,7 @@ function Arrows(props: { data: header_type[] | null }) {
   ) : (
     <>
       {props.data.map((e) => (
-        <p>{to_arrow(e[0], e[3])}</p>
+        <p>{to_arrow(e[0])}</p>
       ))}
     </>
   );
