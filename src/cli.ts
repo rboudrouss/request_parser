@@ -28,6 +28,8 @@ export default function cli() {
 
   if (process.argv.includes("-o")) file_index = process.argv.indexOf("-o") + 1;
 
+  let start_index = process.argv.includes("-s")
+
   if (process.argv.includes("-F")) {
     let f_index = process.argv.indexOf("-F");
     let filobj = process.argv
@@ -38,8 +40,8 @@ export default function cli() {
 
   if (process.argv[2].toUpperCase().startsWith("A")) {
     let msg = process.argv.includes("-h")
-      ? parsed.map((e) => human_str(e)).join("\n")
-      : JSON.stringify(parsed.map((e) => e.slice(1)));
+      ? parsed.map((e) => human_str(e, start_index)).join("\n")
+      : JSON.stringify(parsed);
 
     if (file_index && typeof process.argv[file_index] !== "undefined")
       writeF(msg, process.argv[file_index]);
@@ -48,7 +50,8 @@ export default function cli() {
     return;
   }
 
-  let msg = parsed.map((l) => to_arrow(l[0])).join("\n");
+
+  let msg = parsed.map((l) => to_arrow(l[0], start_index)).join("\n");
 
   if (file_index && typeof process.argv[file_index] !== "undefined")
     writeF(msg, process.argv[file_index]);

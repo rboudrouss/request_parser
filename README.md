@@ -41,6 +41,8 @@ l'option `A` c'est pour l'analyse et `F` c'est pour le monde affichage avec FLEC
 
 Le `-h` avec le mode `A` permet d'avoir une version plus lisible (_humaine_) de la description de la frame
 
+L'option `-s` permet d'afficher l'index du byte où commence la frame au lieu du numéro de la frame. c'est assez utile pour faire du déboggage.
+
 ## Les filtres
 
 Les options de filtres que vous avez sont :

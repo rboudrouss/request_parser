@@ -47,9 +47,7 @@ export type toArrowT = (
   macD: string,
   index?: number,
   ipS?: string,
-  ipD?: string,
-  portS?: string,
-  portD?: string
+  ipD?: string
 ) => string;
 
 export const defaultToArrow: toArrowT = (msg, macS, macD, index, ipS, ipD) => {
@@ -68,14 +66,15 @@ export const defaultToArrow: toArrowT = (msg, macS, macD, index, ipS, ipD) => {
   )} : ${msg}`;
 };
 
-export function to_arrow(filtD: filter_dict) {
+export function to_arrow(filtD: filter_dict, startIndex?: boolean) {
+  let index = startIndex ? filtD.startIndex : filtD.index;
   if (!filtD.ip)
-    return defaultToArrow(filtD.msg, filtD.mac[0], filtD.mac[1], filtD.index);
+    return defaultToArrow(filtD.msg, filtD.mac[0], filtD.mac[1], index);
   return defaultToArrow(
     filtD.msg,
     filtD.mac[0],
     filtD.mac[1],
-    filtD.index,
+    index,
     filtD.ip[0],
     filtD.ip[1]
   );
@@ -172,12 +171,13 @@ export function layer_str(
   return msg;
 }
 
-export function human_str(data: header_type): string {
+export function human_str(data: header_type, start_index?:boolean): string {
   let msg = "";
 
   let filterI: filter_dict = data[0];
-  if (filterI.index)
-    msg += `------- frame n°${filterI.index
+  let index = start_index ? filterI.startIndex : filterI.index
+  if (index)
+    msg += `------- frame n°${index
       .toString()
       .padStart(3, "0")} ------\n`;
 
