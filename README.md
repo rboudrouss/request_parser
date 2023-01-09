@@ -47,15 +47,7 @@ L'option `-s` permet d'afficher l'index du byte où commence la frame au lieu du
 
 Les options de filtres que vous avez sont :
 
-- `arp`: sélectionne seulement les requêtes ARP
-
-- `ipv4` : sélectionne seulement les requêtes qui utilisent IPV4
-
-- `ipv6` : sélectionne seulement les requêtes qui utilisent IPV6
-
-- `tcp` : sélectionne seulement les requêtes qui utilisent le protocole TCP
-
-- `http` : sélectionne seulement les requêtes http
+- `ethernet2`/`arp`/`ipv4`/`ipv6`/`icmp`/`tcp`/`udp`/`http` : sélectionne seulement les requêtes utilisant le protocole donné. (Tout protocole supporté peut être trié)
 
 - `index=<n°> :` : sélectionne la (`<n°>`-1)ème requête par trie chronologique. (utile pour voir une requête en particulier en analyse)
 
@@ -87,7 +79,7 @@ Examples :
 
 - `node cli.js f data/txt/http2.txtcap -F tcp source_ip=145.254.160.237 port=80 -o test.txt`
 
-Cette commande lit le ficher `http2.txtcap` et affiche en mode flèches les requêtes utilisant tcp, avec comme ip source `145.254.160.237`, emis ou à destination du port `80` et l'écris dans le fichier `test.txt`.
+Cette commande lit le ficher `http2.txtcap` et affiche en mode flèches les requêtes utilisant **tcp**, avec comme ip source `145.254.160.237`, emis ou à destination du port `80` et l'écris dans le fichier `test.txt`.
 
 - `node cli.js a data/txt/http2.txtcap -F index=29 -o data/http2.json`
 

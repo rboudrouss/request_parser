@@ -10,7 +10,7 @@ import {
 } from "../parser";
 import http_formater from "./applicationLayer";
 import internetDictParser, { InternetType } from "./internetLayer";
-import ethernetParser, { ethernetType } from "./physicalLayer/ethernet";
+import ethernetParser, { ethernetType } from "./physicalLayer/ethernet2";
 import transportDictParser, { TransportType } from "./transportLayer";
 import { tag, taged_value, tcp_flagE } from "./utils";
 
@@ -58,7 +58,7 @@ const header_parser = coroutine((run): header_type => {
       ethernet_frame[1].description as string,
       ethernet_frame[0].description as string,
     ],
-    layers: ["ethernet", null, null, null],
+    layers: ["ethernet2", null, null, null],
     startIndex: index,
   };
 
@@ -100,12 +100,7 @@ const header_parser = coroutine((run): header_type => {
         is_http =
           name === "tcp" &&
           (Number(info.sourceP) === 80 || Number(info.destP) === 80);
-      } else
-        console.log(
-          "gotta need to implemente more info of the ",
-          name,
-          " protocol"
-        );
+      }
       filter_info.msg = toMsg
         ? toMsg(transportL)
         : `No Info for layer, ${name} protocol=${protocol}`;

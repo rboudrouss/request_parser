@@ -19,3 +19,5 @@ const http_formater = (data: string): string[] => {
 };
 
 export default http_formater;
+
+export const application_supported = ["http"]

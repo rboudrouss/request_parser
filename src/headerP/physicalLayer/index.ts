@@ -1,9 +1,9 @@
-// ONLY SUPPORTS ETHERNET <!>
-import ethernetParser from "./ethernet";
+// ONLY SUPPORTS ETHERNET2 <!>
+import ethernetParser from "./ethernet2";
 
 const physicalParser = ethernetParser;
 export default physicalParser;
 
-export const physical_supported = ["Ethernet2"];
+export const physical_supported = ["ethernet2"];
 
-export * from "./ethernet";
+export * from "./ethernet2";

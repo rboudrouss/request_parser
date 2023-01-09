@@ -24,6 +24,7 @@ const icmpComp: transportComp<icmpType> = {
   name: "icmp",
   parser: icmpParser,
   infoF: () => null,
+  toMsg: (frame) => `ICMP : ${frame[0].description}`
 };
 
 export default icmpComp;

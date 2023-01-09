@@ -3,9 +3,12 @@ import {
   header_type,
   filter_dict,
   TransportType,
-  tcpType,
   InternetType,
   ethernetType,
+  internet_supported,
+  application_supported,
+  physical_supported,
+  transport_supported,
 } from ".";
 
 export enum tcp_flagE {
@@ -81,7 +84,8 @@ export function to_arrow(filtD: filter_dict, startIndex?: boolean) {
 }
 
 export function filter(o: string[][], data: header_type[]): any {
-  let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp", "udp"];
+  // let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp", "udp"];
+  let cond_parm = [...internet_supported, ...application_supported, ...physical_supported, ...transport_supported]
   let arg_parm: { [key: string]: (x: header_type, e: string) => boolean } = {
     source_ip: (x, e) => Boolean(x[0].ip && x[0].ip[0] === e),
     dest_ip: (x, e: string) => Boolean(x[0].ip && x[0].ip[1] === e),
