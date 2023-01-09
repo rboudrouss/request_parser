@@ -39,13 +39,12 @@ export type header_type = [
   ethernetType,
   InternetType | null,
   TransportType | null,
-  [taged_value<string[] | null>],
+  [taged_value<string[] | null>] | null,
   [taged_value<string> | null]
 ];
 
-// TODO make this code cleaner / find a better way
-// TODO fait trop à la va vite, ce code est vraiment pas propre
 const header_parser = coroutine((run): header_type => {
+  const { index } = run(getIndex);
   let ethernet_frame = run(ethernetParser);
   let internetL: InternetType | null = null;
   let transportL: TransportType | null = null;
@@ -60,18 +59,22 @@ const header_parser = coroutine((run): header_type => {
       ethernet_frame[0].description as string,
     ],
     layers: ["ethernet", null, null, null],
-    startIndex: -1,
+    startIndex: index,
   };
-
-  const { index } = run(getIndex);
-  filter_info.startIndex = index - 14; // HACK hardcoded
 
   let ethertype = ethernet_frame[2].value;
 
   let internetComp = internetDictParser[ethertype];
   if (!internetComp) {
-    console.log("Error, Internet protocol not supported. Cannot continue");
-    run(fail("header_parser: Unsupported Internet protocol"));
+    console.log(
+      `Error, Internet protocol not supported. Ethertype=${ethertype}. Cannot continue\n`,
+      "Peek: ",
+      run(possibly(peekUInts(16))),
+      "Info: ",
+      filter_info.mac
+    );
+
+    run(fail(`Error, Internet protocol not supported. Ethertype=${ethertype}`));
   }
 
   let { name, parser, infoF, canHaveLayer, toMsg } = internetComp;
@@ -103,12 +106,17 @@ const header_parser = coroutine((run): header_type => {
           name,
           " protocol"
         );
-      filter_info.msg = toMsg ? toMsg(transportL) : undefined;
+      filter_info.msg = toMsg
+        ? toMsg(transportL)
+        : `No Info for layer, ${name} protocol=${protocol}`;
     } else console.log("Not supported transport layer");
   }
 
   unknown_data = run(
-    (filter_info.size ? readUntilI(filter_info.size + index) : succeed(null))
+    (filter_info.size
+      ? readUntilI(filter_info.size + filter_info.startIndex)
+      : succeed(null)
+    )
       .map((x) =>
         x ? [x.map((e) => e.toString(16).padStart(2, "0")).join("")] : x
       )
