@@ -1,7 +1,3 @@
-TODO add a release flag with projet already built
-
-TODO test icmp & ipv6 x')
-
 # projet de réseaux
 
 ## Input

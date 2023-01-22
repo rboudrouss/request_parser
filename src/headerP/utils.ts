@@ -70,7 +70,9 @@ export const defaultToArrow: toArrowT = (msg, macS, macD, index, ipS, ipD) => {
 };
 
 export function to_arrow(filtD: filter_dict, startIndex?: boolean) {
-  let index = startIndex ? filtD.startIndex.toString(16) : filtD.index?.toString();
+  let index = startIndex
+    ? filtD.startIndex.toString(16)
+    : filtD.index?.toString();
   if (!filtD.ip)
     return defaultToArrow(filtD.msg, filtD.mac[0], filtD.mac[1], index);
   return defaultToArrow(
@@ -84,8 +86,13 @@ export function to_arrow(filtD: filter_dict, startIndex?: boolean) {
 }
 
 export function filter(o: string[][], data: header_type[]): any {
-  // let cond_parm = ["arp", "ipv4", "ipv6", "tcp", "http", "icmp", "udp"];
-  let cond_parm = [...internet_supported, ...application_supported, ...physical_supported, ...transport_supported]
+  let out: header_type[] = [];
+  let cond_parm = [
+    ...internet_supported,
+    ...application_supported,
+    ...physical_supported,
+    ...transport_supported,
+  ];
   let arg_parm: { [key: string]: (x: header_type, e: string) => boolean } = {
     source_ip: (x, e) => Boolean(x[0].ip && x[0].ip[0] === e),
     dest_ip: (x, e: string) => Boolean(x[0].ip && x[0].ip[1] === e),
@@ -103,37 +110,30 @@ export function filter(o: string[][], data: header_type[]): any {
   };
 
   for (const e of o) {
-    let length = data.length;
-    for (let i = 0; i < length; )
-      // si e[0] est un paramètre unique qui n'a pas besoin de valeur additionnel.
-      // Genre un protocole arp/ipv4/tcp
-      if (cond_parm.includes(e[0]) && !data[i][0].layers.includes(e[0])) {
-        data.splice(i, 1);
-        length--;
-      }
+    // si e[0] est un paramètre unique qui n'a pas besoin de valeur additionnel.
+    // Genre un protocole arp/ipv4/tcp
+    for (const frame of data)
+      if (cond_parm.includes(e[0]) && !frame[0].layers.includes(e[0])) continue;
       // si e[0] est un paramètre qui a besoin d'un second paramètre
       // typiquement ip/port/mac/index
       else if (
         e[0] in arg_parm &&
         typeof e[1] !== "undefined" &&
-        !arg_parm[e[0]](data[i], e[1])
-      ) {
-        data.splice(i, 1);
-        length--;
-      }
+        !arg_parm[e[0]](frame, e[1])
+      )
+        continue;
       // si e[0] est un flag TCP
       else if (
         e[0] in tcp_flagE &&
-        !data[i][0].tcp_flags?.includes(
+        !frame[0].tcp_flags?.includes(
           tcp_flagE[e[0] as any] as unknown as tcp_flagE
         )
-      ) {
-        data.splice(i, 1);
-        length--;
-      } else i++;
+      )
+        continue;
+      else out.push(frame);
   }
 
-  return data;
+  return out;
 }
 
 export function layer_str(
@@ -175,15 +175,13 @@ export function layer_str(
   return msg;
 }
 
-export function human_str(data: header_type, start_index?:boolean): string {
+export function human_str(data: header_type, start_index?: boolean): string {
   let msg = "";
 
   let filterI: filter_dict = data[0];
-  let index = start_index ? filterI.startIndex : filterI.index
+  let index = start_index ? filterI.startIndex : filterI.index;
   if (index)
-    msg += `------- frame n°${index
-      .toString()
-      .padStart(3, "0")} ------\n`;
+    msg += `------- frame n°${index.toString().padStart(3, "0")} ------\n`;
 
   msg += data
     .slice(1)
